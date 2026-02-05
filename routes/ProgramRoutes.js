@@ -51,6 +51,6 @@ router.get("/getEditProgramModal/:id", requireLogin, programController.editProgr
 // router.get("/programs/new", requireLogin, programController.newProgramForm);
 // router.get("/programs/:id/edit", requireLogin, programController.editProgramForm);
 // router.post("/programs/:id/edit", requireLogin, programController.updateProgram);
-// router.post("/programs/:id/delete", requireLogin, programController.deleteProgram);
+router.post("/programs/:id/delete", requireLogin, programController.deleteProgram);
 
 module.exports = router;

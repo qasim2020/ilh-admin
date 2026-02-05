@@ -41,7 +41,7 @@
   <div class="container-xl">
     <div class="row row-cards">
       {{#each programs}}
-      <div class="col-sm-6 col-lg-4">
+      <div class="col-sm-6 col-lg-4" data-program-id="{{this._id}}">
         <div class="card">
 
           <div class="card-img-top"
@@ -263,4 +263,28 @@
       }
     });
   }
+
+  $(document).on('click', '.delete-program', function () {
+    const programId = $(this).attr('data-id');
+
+    if (!programId) return;
+
+    const confirmed = confirm('Are you sure you want to delete this program?');
+    if (!confirmed) return;
+
+    $.ajax({
+      url: `/programs/${programId}/delete`,
+      type: 'POST',
+      contentType: 'application/json',
+      success: function () {
+        const card = $(document).find(`[data-program-id="${programId}"]`);
+        if (card.length) {
+          card.remove();
+        }
+      },
+      error: function (xhr) {
+        alert(xhr.responseText || 'Failed to delete program');
+      }
+    });
+  });
 </script>

@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 const User = require('../models/User');
 const Program = require('../models/Program');
 
@@ -51,5 +54,33 @@ exports.editProgramModal = async (req, res) => {
             error: 'Error fetching program details',
             details: error.message,
         });
+    }
+};
+
+exports.deleteProgram = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const program = await Program.findById(id).lean();
+        if (!program) {
+            return res.status(404).json({ error: 'Program not found' });
+        }
+
+        if (program.imageUrl && typeof program.imageUrl === 'string') {
+            const normalizedImageUrl = program.imageUrl.replace(/^\//, '');
+            const imagePath = path.join(__dirname, '..', normalizedImageUrl);
+
+            fs.unlink(imagePath, (err) => {
+                if (err && err.code !== 'ENOENT') {
+                    console.error('Failed to delete program image:', err);
+                }
+            });
+        }
+
+        await Program.deleteOne({ _id: id });
+        return res.json({ message: 'Program deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting program:', error);
+        return res.status(500).json({ error: 'Internal server error' });
     }
 };
