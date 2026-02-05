@@ -58,8 +58,10 @@ const resizeCloudinaryUrl = function (url, template) {
 };
 
 const capitalizeFirstLetter = function (str) {
-    if (!str) return '';
-    return str.charAt(0).toUpperCase() + str.slice(1);
+    if (typeof str !== 'string') return '';
+    const trimmed = str.trim();
+    if (!trimmed) return '';
+    return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
 };
 
 const lowerCaseFirstLetter = function (str) {

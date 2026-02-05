@@ -7,6 +7,7 @@ const app = express();
 const router = express.Router();
 const requireLogin = require('../modules/authenticate');
 const programController = require('../controllers/programController');
+const { createLog } = require('../modules/logService');
 
 // Set up storage
 const storage = multer.diskStorage({
@@ -28,6 +29,13 @@ const upload = multer({ storage: storage });
 router.post("/upload-program-image", upload.single("programImage"), (req, res) => {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
     // Return the uploaded image URL
+    createLog({
+        req,
+        action: 'upload',
+        entityType: 'program-image',
+        message: `Program image uploaded by ${req.session?.name || 'system'}`,
+        metadata: { filename: req.file.filename, uploadedBy: req.session?.name || 'system' },
+    });
     res.json({ imageUrl: `/uploads/${req.file.filename}` });
 });
 
@@ -46,7 +54,10 @@ router.post("/delete-program-image", (req, res) => {
 });
 
 router.get("/programs", requireLogin, programController.programs);
+router.get("/programs/:id/view", requireLogin, programController.programView);
 router.post("/programs", requireLogin, programController.createProgram);
+router.post("/programs/:id", requireLogin, programController.updateProgram);
+router.post("/programs/:id/gallery", requireLogin, upload.array("galleryFiles", 20), programController.addProgramGallery);
 router.get("/getEditProgramModal/:id", requireLogin, programController.editProgramModal);
 // router.get("/programs/new", requireLogin, programController.newProgramForm);
 // router.get("/programs/:id/edit", requireLogin, programController.editProgramForm);

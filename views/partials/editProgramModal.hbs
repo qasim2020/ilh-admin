@@ -37,13 +37,13 @@
                 <div class="mb-3">
                     <label class="form-label">Description</label>
                     <textarea id="programDescription{{program._id}}" name="description" class="form-control"
-                        rows="10">{{program.description}}</textarea>
+                        rows="10">{{{program.description}}}</textarea>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Special Features</label>
                     <textarea id="specialFeatures{{program._id}}" name="specialFeatures" class="form-control"
-                        rows="10">{{program.specialFeatures}}</textarea>
+                        rows="10">{{{program.specialFeatures}}}</textarea>
                 </div>
 
                 <div class="row">
@@ -101,14 +101,8 @@
                 <a href="#" class="btn btn-link link-secondary" data-bs-dismiss="modal">
                     Cancel
                 </a>
-                <a href="#" class="btn btn-primary ms-auto" onclick="updateProgram(this)">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
-                        stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                        <path d="M12 5l0 14"></path>
-                        <path d="M5 12l14 0"></path>
-                    </svg>
+                <a href="#" class="btn btn-primary ms-auto" onclick="updateProgram{{program._id}}(this)">
+                    <i class="ti ti-device-floppy icon"></i>
                     Edit Program
                 </a>
             </div>
@@ -120,12 +114,12 @@
     data-bs-target="#modal-{{program._id}}"></button>
 
 <script>
-    let programEditor{{ program._id }}, featuresEditor{ { program._id } };
+    let programEditor{{program._id}}, featuresEditor{{program._id}};
 
     ClassicEditor
         .create(document.querySelector('#programDescription{{program._id}}'))
         .then(editor => {
-            programEditor{ { program._id } } = editor;
+            programEditor{{program._id}} = editor;
         })
         .catch(error => {
             console.error(error);
@@ -134,7 +128,7 @@
     ClassicEditor
         .create(document.querySelector('#specialFeatures{{program._id}}'))
         .then(editor => {
-            featuresEditor{ { program._id } } = editor;
+            featuresEditor{{program._id}} = editor;
         })
         .catch(error => {
             console.error(error);
@@ -147,17 +141,17 @@
         $("#programImageInput{{program._id}}").click();
     });
 
-    let previousImageUrl = "{{program.imageUrl}}";
+    let previousImageUrl{{program._id}} = "{{program.imageUrl}}";
 
     $("#programImageInput{{program._id}}").on("change", function () {
         var file = this.files[0];
         if (!file) return;
 
-        if (previousImageUrl) {
+        if (previousImageUrl{{program._id}}) {
             $.ajax({
                 url: "/delete-program-image",
                 type: "POST",
-                data: { imageUrl: previousImageUrl },
+                data: { imageUrl: previousImageUrl{{program._id}} },
                 success: function (res) {
                     console.log("Previous image deleted");
                 },
@@ -181,7 +175,7 @@
             },
             success: function (res) {
                 $("#programImageBox{{program._id}}").html('<img src="' + res.imageUrl + '" style="height:100%; width:100%; object-fit:cover; border-radius:0.25rem;">');
-                previousImageUrl = res.imageUrl;
+                previousImageUrl{{program._id}} = res.imageUrl;
             },
             error: function (err) {
                 $("#programImageBox{{program._id}}").html('<span style="font-size:2rem; color:#6c757d;">+</span>');
@@ -190,17 +184,18 @@
         });
     });
 
-    const updateProgram = (btn) => {
+    const updateProgram{{program._id}} = (btn) => {
         const modal = $(btn).closest('.modal');
+        const $btn = $(btn);
 
         const imageUrl = $("#programImageBox{{program._id}} img").attr("src");
         const title = modal.find('input[name="title"]').val().trim();
         const age = modal.find('input[name="ageRange"]').val().trim();
         const duration = modal.find('input[name="duration"]').val().trim();
-        const description = programEditor.getData().trim();
-        const specialFeatures = featuresEditor.getData().trim();
+        const description = programEditor{{program._id}}.getData().trim();
+        const specialFeatures = featuresEditor{{program._id}}.getData().trim();
         const gender = modal.find('select[name="gender"]').val();
-        const status = $("input[name='status']:checked").val();
+        const status = modal.find("input[name='status']:checked").val();
 
         const data = {
             imageUrl,
@@ -213,20 +208,23 @@
             status,
         };
 
-        console.log(data);
-        return;
-        
+        const originalHtml = $btn.html();
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...');
+
         $.ajax({
-            url: "/programs",
+            url: "/programs/{{program._id}}",
             type: "POST",
             data,
-            success: function (res) {
-                alert("Program created successfully");
+            success: function () {
+                alert("Program updated successfully");
                 window.location.href = "/programs";
             },
             error: function (err) {
                 console.log(err);
-                alert("Failed to create program");
+                alert("Failed to update program");
+            },
+            complete: function () {
+                $btn.prop('disabled', false).html(originalHtml);
             }
         });
     };

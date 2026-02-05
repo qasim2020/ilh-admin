@@ -11,6 +11,21 @@ const ProgramSchema = new mongoose.Schema({
     specialFeatures: String,
     ageRange: String,
     duration: String,
+    gallery: [
+        {
+            url: String,
+            type: {
+                type: String,
+                enum: ["image", "video"],
+                default: "image",
+            },
+            filename: String,
+            uploadedAt: {
+                type: Date,
+                default: Date.now,
+            },
+        },
+    ],
     isActive: {
         type: Boolean,
         default: true

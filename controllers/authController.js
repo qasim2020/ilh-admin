@@ -6,6 +6,7 @@ const fs = require('fs').promises;
 const path = require('path');
 
 const { isValidEmail } = require('../modules/checkValidForm');
+const { createLog } = require('../modules/logService');
 
 exports.renderLoginPage = async (req, res) => {
     try {
@@ -97,6 +98,15 @@ exports.testMagicLink = async (req, res) => {
         req.session.name = user.name;
         
         req.session.save(() => {
+            createLog({
+                req,
+                userId: user._id,
+                action: 'login',
+                entityType: 'user',
+                entityId: user._id,
+                message: 'User logged in via magic link',
+                metadata: { email: user.email },
+            });
             res.redirect('/dashboard');
         });
     } catch (e) {

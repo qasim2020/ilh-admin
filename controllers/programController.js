@@ -3,6 +3,7 @@ const path = require('path');
 
 const User = require('../models/User');
 const Program = require('../models/Program');
+const { createLog } = require('../modules/logService');
 
 exports.programs = async (req, res) => {
 
@@ -15,6 +16,40 @@ exports.programs = async (req, res) => {
         userName: req.session.name,
         sidebarCollapsed: req.session.sidebarCollapsed ? req.session.sidebarCollapsed : false,
     });
+};
+
+exports.programView = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const program = await Program.findById(id).lean();
+
+        if (!program) {
+            return res.status(404).render('error', {
+                message: 'Program not found',
+                activeMenu: 'programs',
+                userId: req.session.userId,
+                userName: req.session.name,
+                sidebarCollapsed: req.session.sidebarCollapsed ? req.session.sidebarCollapsed : false,
+            });
+        }
+
+        return res.render('program-view', {
+            program,
+            activeMenu: 'programs',
+            userId: req.session.userId,
+            userName: req.session.name,
+            sidebarCollapsed: req.session.sidebarCollapsed ? req.session.sidebarCollapsed : false,
+        });
+    } catch (error) {
+        console.error('Error loading program view:', error);
+        return res.status(500).render('error', {
+            message: 'Failed to load program',
+            activeMenu: 'programs',
+            userId: req.session.userId,
+            userName: req.session.name,
+            sidebarCollapsed: req.session.sidebarCollapsed ? req.session.sidebarCollapsed : false,
+        });
+    }
 };
 
 exports.createProgram = async (req, res) => {
@@ -31,6 +66,14 @@ exports.createProgram = async (req, res) => {
             status
         });
         await program.save();
+        createLog({
+            req,
+            action: 'create',
+            entityType: 'program',
+            entityId: program._id,
+            message: `Program ${program.title} created by ${req.session?.name || 'system'}`,
+            metadata: { title: program.title, createdBy: req.session?.name || 'system' },
+        });
         res.status(201).json({ message: 'Program created successfully' });
     } catch (error) {
         console.error('Error creating program:', error);
@@ -57,6 +100,57 @@ exports.editProgramModal = async (req, res) => {
     }
 };
 
+exports.updateProgram = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const {
+            imageUrl,
+            title,
+            age,
+            duration,
+            description,
+            specialFeatures,
+            gender,
+            status,
+        } = req.body;
+
+        const isActive = status === 'active';
+
+        const updated = await Program.findByIdAndUpdate(
+            id,
+            {
+                imageUrl,
+                title,
+                ageRange: age,
+                duration,
+                description,
+                specialFeatures,
+                gender,
+                isActive,
+            },
+            { new: true }
+        ).lean();
+
+        if (!updated) {
+            return res.status(404).json({ error: 'Program not found' });
+        }
+
+        createLog({
+            req,
+            action: 'update',
+            entityType: 'program',
+            entityId: updated._id,
+            message: `Program ${updated.title} updated by ${req.session?.name || 'system'}`,
+            metadata: { title: updated.title, updatedBy: req.session?.name || 'system' },
+        });
+
+        return res.json({ message: 'Program updated successfully' });
+    } catch (error) {
+        console.error('Error updating program:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
 exports.deleteProgram = async (req, res) => {
     try {
         const { id } = req.params;
@@ -78,9 +172,57 @@ exports.deleteProgram = async (req, res) => {
         }
 
         await Program.deleteOne({ _id: id });
+        createLog({
+            req,
+            action: 'delete',
+            entityType: 'program',
+            entityId: id,
+            message: `Program ${program.title} deleted by ${req.session?.name || 'system'}`,
+            metadata: { title: program.title, deletedBy: req.session?.name || 'system' },
+        });
         return res.json({ message: 'Program deleted successfully' });
     } catch (error) {
         console.error('Error deleting program:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+exports.addProgramGallery = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ error: 'No files uploaded' });
+        }
+
+        const program = await Program.findById(id).lean();
+        if (!program) {
+            return res.status(404).json({ error: 'Program not found' });
+        }
+
+        const mediaItems = req.files.map((file) => ({
+            url: `/uploads/${file.filename}`,
+            type: file.mimetype && file.mimetype.startsWith('video/') ? 'video' : 'image',
+            filename: file.filename,
+            uploadedAt: new Date(),
+        }));
+
+        await Program.findByIdAndUpdate(id, {
+            $push: { gallery: { $each: mediaItems } },
+        });
+
+        createLog({
+            req,
+            action: 'upload',
+            entityType: 'program-gallery',
+            entityId: id,
+            message: `${mediaItems.length} media item(s) uploaded by ${req.session?.name || 'system'}`,
+            metadata: { count: mediaItems.length, uploadedBy: req.session?.name || 'system' },
+        });
+
+        return res.json({ media: mediaItems });
+    } catch (error) {
+        console.error('Error adding program gallery:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
 };
