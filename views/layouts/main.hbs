@@ -47,6 +47,10 @@
       transition: background-color 0.3s ease;
     }
 
+    .no-caret::after {
+      display: none !important;
+    }
+
     .file {
       border-radius: 4px;
       cursor: pointer;
@@ -320,6 +324,77 @@
               </a>
             </li>
 
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#navbar-pages" data-bs-toggle="dropdown" data-bs-auto-close="false"
+                role="button" aria-expanded="false">
+                <span class="nav-link-icon d-lg-inline-block">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-file-text">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                    <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2" />
+                    <path d="M9 9l1 0" />
+                    <path d="M9 13l6 0" />
+                    <path d="M9 17l6 0" />
+                  </svg>
+                </span>
+                <span class="nav-link-title">Pages</span>
+              </a>
+              <div class="dropdown-menu">
+                <div class="dropdown-menu-columns">
+                  <div class="dropdown-menu-column">
+                    <a class="dropdown-item" href="/pages/about">About</a>
+                    <a class="dropdown-item" href="/pages/contact">Contact</a>
+                    <a class="dropdown-item" href="/pages/faq">FAQ</a>
+                  </div>
+                </div>
+              </div>
+            </li>
+
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#navbar-legal" data-bs-toggle="dropdown" data-bs-auto-close="false"
+                role="button" aria-expanded="false">
+                <span class="nav-link-icon d-lg-inline-block">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-shield-check">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M9 12l2 2l4 -4" />
+                    <path d="M12 3l7 4v5c0 5 -3.5 9.5 -7 10c-3.5 -.5 -7 -5 -7 -10v-5l7 -4" />
+                  </svg>
+                </span>
+                <span class="nav-link-title">Legal pages</span>
+              </a>
+              <div class="dropdown-menu">
+                <div class="dropdown-menu-columns">
+                  <div class="dropdown-menu-column">
+                    <a class="dropdown-item" href="/legal/terms">Terms</a>
+                    <a class="dropdown-item" href="/legal/privacy">Privacy</a>
+                    <a class="dropdown-item" href="/legal/cookies">Cookies</a>
+                  </div>
+                </div>
+              </div>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link {{#if (eq 'blogs' activeMenu)}} bg-azure-lt {{/if}}" href="/blogs">
+                <span class="nav-link-icon d-lg-inline-block">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-book">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0" />
+                    <path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0" />
+                    <path d="M3 6l0 13" />
+                    <path d="M12 6l0 13" />
+                    <path d="M21 6l0 13" />
+                  </svg>
+                </span>
+                <span class="nav-link-title">Blogs</span>
+              </a>
+            </li>
+
             <li class="nav-item">
               <a class="nav-link {{#if (eq 'settings' activeMenu)}} bg-azure-lt {{/if}}" href="/settings">
                 <span class="nav-link-icon d-lg-inline-block">
@@ -381,6 +456,67 @@
                 data-bs-toggle="tooltip" data-bs-title="Users">
                 <span class="nav-link-icon d-md-none d-lg-inline-block">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-treadmill"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 3a1 1 0 1 0 2 0a1 1 0 0 0 -2 0" /><path d="M3 14l4 1l.5 -.5" /><path d="M12 18v-3l-3 -2.923l.75 -5.077" /><path d="M6 10v-2l4 -1l2.5 2.5l2.5 .5" /><path d="M21 22a1 1 0 0 0 -1 -1h-16a1 1 0 0 0 -1 1" /><path d="M18 21l1 -11l2 -1" /></svg>
+                </span>
+              </a>
+            </li>
+
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle no-caret" href="#navbar-pages-collapsed" data-bs-toggle="dropdown"
+                data-bs-auto-close="false" role="button" aria-expanded="false" title="Pages">
+                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-file-text">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                    <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2" />
+                    <path d="M9 9l1 0" />
+                    <path d="M9 13l6 0" />
+                    <path d="M9 17l6 0" />
+                  </svg>
+                </span>
+              </a>
+              <div class="dropdown-menu">
+                <a class="dropdown-item" href="/pages/about">About</a>
+                <a class="dropdown-item" href="/pages/contact">Contact</a>
+                <a class="dropdown-item" href="/pages/faq">FAQ</a>
+              </div>
+            </li>
+
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle no-caret" href="#navbar-legal-collapsed" data-bs-toggle="dropdown"
+                data-bs-auto-close="false" role="button" aria-expanded="false" title="Legal pages">
+                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-shield-check">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M9 12l2 2l4 -4" />
+                    <path d="M12 3l7 4v5c0 5 -3.5 9.5 -7 10c-3.5 -.5 -7 -5 -7 -10v-5l7 -4" />
+                  </svg>
+                </span>
+              </a>
+              <div class="dropdown-menu">
+                <a class="dropdown-item" href="/legal/terms">Terms</a>
+                <a class="dropdown-item" href="/legal/privacy">Privacy</a>
+                <a class="dropdown-item" href="/legal/cookies">Cookies</a>
+              </div>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link {{#if (eq 'blogs' activeMenu)}} bg-azure-lt {{/if}}" href="/blogs"
+                data-bs-toggle="tooltip" data-bs-title="Blogs">
+                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-book">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0" />
+                    <path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0" />
+                    <path d="M3 6l0 13" />
+                    <path d="M12 6l0 13" />
+                    <path d="M21 6l0 13" />
+                  </svg>
                 </span>
               </a>
             </li>

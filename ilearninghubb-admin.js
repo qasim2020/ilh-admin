@@ -11,6 +11,8 @@ const authRoutes = require("./routes/authRoutes")
 const homeRoutes = require("./routes/homeRoutes")
 const programRoutes = require("./routes/programRoutes")
 const userRoutes = require("./routes/userRoutes")
+const contentRoutes = require("./routes/contentRoutes")
+const blogRoutes = require("./routes/blogRoutes")
 
 dotenv.config()
 connectDB()
@@ -49,6 +51,8 @@ app.use(authRoutes);
 app.use(homeRoutes);
 app.use(programRoutes);
 app.use(userRoutes);
+app.use(contentRoutes);
+app.use(blogRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on http://localhost:${process.env.PORT}`)
