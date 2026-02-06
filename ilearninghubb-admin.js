@@ -6,6 +6,7 @@ const session = require('express-session');
 const MongoStore = require("connect-mongo");
 const path = require('path');
 const hbsHelpers = require('./modules/helpers');
+const Settings = require('./models/Settings');
 
 const authRoutes = require("./routes/authRoutes")
 const homeRoutes = require("./routes/homeRoutes")
@@ -13,6 +14,7 @@ const programRoutes = require("./routes/programRoutes")
 const userRoutes = require("./routes/userRoutes")
 const contentRoutes = require("./routes/contentRoutes")
 const blogRoutes = require("./routes/blogRoutes")
+const settingsRoutes = require("./routes/settingsRoutes")
 
 dotenv.config()
 connectDB()
@@ -38,7 +40,27 @@ app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 app.use(express.static("public"))
 
-app.engine("hbs", exphbs.engine({ extname: ".hbs", defaultLayout: "main", helpers: hbsHelpers  }))
+app.use(async (req, res, next) => {
+    try {
+        const settings = await Settings.findOne({ key: 'main' }).lean();
+        res.locals.settings = settings || {};
+    } catch (error) {
+        console.error('Failed to load settings:', error);
+        res.locals.settings = {};
+    }
+    next();
+});
+
+app.engine(
+    "hbs",
+    exphbs.engine({
+        extname: ".hbs",
+        defaultLayout: "main",
+        layoutsDir: path.join(__dirname, "views", "layouts"),
+        partialsDir: path.join(__dirname, "views", "partials"),
+        helpers: hbsHelpers,
+    })
+)
 app.set("view engine", "hbs")
 app.set("views", "./views")
 
@@ -53,6 +75,7 @@ app.use(programRoutes);
 app.use(userRoutes);
 app.use(contentRoutes);
 app.use(blogRoutes);
+app.use(settingsRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on http://localhost:${process.env.PORT}`)

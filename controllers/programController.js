@@ -171,6 +171,20 @@ exports.deleteProgram = async (req, res) => {
             });
         }
 
+        if (Array.isArray(program.gallery)) {
+            program.gallery.forEach((item) => {
+                if (item.url && typeof item.url === 'string' && item.url.startsWith('/uploads/')) {
+                    const normalizedUrl = item.url.replace(/^\//, '');
+                    const filePath = path.join(__dirname, '..', normalizedUrl);
+                    fs.unlink(filePath, (err) => {
+                        if (err && err.code !== 'ENOENT') {
+                            console.error('Failed to delete gallery file:', err);
+                        }
+                    });
+                }
+            });
+        }
+
         await Program.deleteOne({ _id: id });
         createLog({
             req,
@@ -223,6 +237,62 @@ exports.addProgramGallery = async (req, res) => {
         return res.json({ media: mediaItems });
     } catch (error) {
         console.error('Error adding program gallery:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+exports.deleteProgramGallery = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { filename, url } = req.body;
+
+        if (!filename && !url) {
+            return res.status(400).json({ error: 'Filename or URL is required' });
+        }
+
+        const program = await Program.findById(id);
+        if (!program) {
+            return res.status(404).json({ error: 'Program not found' });
+        }
+
+        const target = program.gallery.find((item) => {
+            if (filename) return item.filename === filename;
+            return item.url === url;
+        });
+
+        if (!target) {
+            return res.status(404).json({ error: 'Media not found' });
+        }
+
+        program.gallery = program.gallery.filter((item) => {
+            if (filename) return item.filename !== filename;
+            return item.url !== url;
+        });
+
+        await program.save();
+
+        if (target.url && target.url.startsWith('/uploads/')) {
+            const normalized = target.url.replace(/^\//, '');
+            const filePath = path.join(__dirname, '..', normalized);
+            fs.unlink(filePath, (err) => {
+                if (err && err.code !== 'ENOENT') {
+                    console.error('Failed to delete gallery file:', err);
+                }
+            });
+        }
+
+        createLog({
+            req,
+            action: 'delete',
+            entityType: 'program-gallery',
+            entityId: id,
+            message: `Gallery item removed by ${req.session?.name || 'system'}`,
+            metadata: { filename: target.filename || null, url: target.url || null },
+        });
+
+        return res.json({ message: 'Media removed successfully' });
+    } catch (error) {
+        console.error('Error deleting program gallery:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
 };

@@ -58,6 +58,7 @@ router.get("/programs/:id/view", requireLogin, programController.programView);
 router.post("/programs", requireLogin, programController.createProgram);
 router.post("/programs/:id", requireLogin, programController.updateProgram);
 router.post("/programs/:id/gallery", requireLogin, upload.array("galleryFiles", 20), programController.addProgramGallery);
+router.post("/programs/:id/gallery/delete", requireLogin, programController.deleteProgramGallery);
 router.get("/getEditProgramModal/:id", requireLogin, programController.editProgramModal);
 // router.get("/programs/new", requireLogin, programController.newProgramForm);
 // router.get("/programs/:id/edit", requireLogin, programController.editProgramForm);

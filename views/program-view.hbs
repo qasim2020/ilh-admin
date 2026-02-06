@@ -78,15 +78,21 @@
               {{#if program.gallery.length}}
                 {{#each program.gallery}}
                   <div class="col-6">
-                    <a href="{{this.url}}" data-fslightbox="program-gallery" {{#if (eq this.type "video")}}data-type="video"{{/if}}>
-                      <div class="ratio ratio-4x3 bg-muted rounded overflow-hidden d-flex align-items-center justify-content-center">
-                        {{#if (eq this.type "video")}}
-                          <video src="{{this.url}}" muted preload="metadata" style="width:100%; height:100%; object-fit:cover;"></video>
-                        {{else}}
-                          <img src="{{this.url}}" alt="Gallery media" style="width:100%; height:100%; object-fit:cover;">
-                        {{/if}}
-                      </div>
-                    </a>
+                    <div class="position-relative">
+                      <a href="{{this.url}}" data-fslightbox="program-gallery" {{#if (eq this.type "video")}}data-type="video"{{/if}}>
+                        <div class="ratio ratio-4x3 bg-muted rounded overflow-hidden d-flex align-items-center justify-content-center">
+                          {{#if (eq this.type "video")}}
+                            <video src="{{this.url}}" muted preload="metadata" style="width:100%; height:100%; object-fit:cover;"></video>
+                          {{else}}
+                            <img src="{{this.url}}" alt="Gallery media" style="width:100%; height:100%; object-fit:cover;">
+                          {{/if}}
+                        </div>
+                      </a>
+                      <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 delete-gallery-item"
+                        data-filename="{{this.filename}}" data-url="{{this.url}}">
+                        <i class="ti ti-trash icon" style="font-size: 0.85rem; line-height: 1;"></i>
+                      </button>
+                    </div>
                   </div>
                 {{/each}}
               {{else}}
@@ -135,11 +141,17 @@
           const isVideo = item.type === 'video';
           const card = `
             <div class="col-6">
-              <a href="${item.url}" data-fslightbox="program-gallery" ${isVideo ? 'data-type="video"' : ''}>
-                <div class="ratio ratio-4x3 bg-muted rounded overflow-hidden d-flex align-items-center justify-content-center">
-                  ${isVideo ? `<video src="${item.url}" muted preload="metadata" style="width:100%; height:100%; object-fit:cover;"></video>` : `<img src="${item.url}" alt="Gallery media" style="width:100%; height:100%; object-fit:cover;">`}
-                </div>
-              </a>
+              <div class="position-relative">
+                <a href="${item.url}" data-fslightbox="program-gallery" ${isVideo ? 'data-type="video"' : ''}>
+                  <div class="ratio ratio-4x3 bg-muted rounded overflow-hidden d-flex align-items-center justify-content-center">
+                    ${isVideo ? `<video src="${item.url}" muted preload="metadata" style="width:100%; height:100%; object-fit:cover;"></video>` : `<img src="${item.url}" alt="Gallery media" style="width:100%; height:100%; object-fit:cover;">`}
+                  </div>
+                </a>
+                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 delete-gallery-item"
+                  data-filename="${item.filename || ''}" data-url="${item.url}">
+                  <i class="ti ti-trash icon" style="font-size: 0.85rem; line-height: 1;"></i>
+                </button>
+              </div>
             </div>
           `;
           grid.append(card);
@@ -155,6 +167,47 @@
       },
       complete: function () {
         $input.prop('disabled', false);
+      }
+    });
+  });
+
+  $(document).on('click', '.delete-gallery-item', function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const $button = $(this);
+    const filename = $button.data('filename');
+    const url = $button.data('url');
+
+    if (!confirm('Delete this media item?')) {
+      return;
+    }
+
+    $.ajax({
+      url: '/programs/{{program._id}}/gallery/delete',
+      type: 'POST',
+      data: { filename, url },
+      success: function () {
+        const $col = $button.closest('.col-6');
+        $col.remove();
+
+        const grid = $('#programGalleryGrid');
+        if (grid.children().length === 0) {
+          grid.append(`
+            <div class="col-12">
+              <div class="ratio ratio-4x3 bg-muted rounded d-flex align-items-center justify-content-center">
+                <span class="text-muted">No media yet</span>
+              </div>
+            </div>
+          `);
+        }
+
+        if (window.refreshFsLightbox) {
+          refreshFsLightbox();
+        }
+      },
+      error: function (err) {
+        alert(err.responseJSON?.error || 'Failed to delete media');
       }
     });
   });

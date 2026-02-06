@@ -54,7 +54,9 @@ router.post('/delete-blog-image', requireLogin, (req, res) => {
 });
 
 router.get('/blogs', requireLogin, blogController.blogs);
+router.get('/blogs/:id/view', requireLogin, blogController.blogView);
 router.post('/blogs', requireLogin, blogController.createBlog);
 router.post('/blogs/:id', requireLogin, blogController.updateBlog);
+router.post('/blogs/:id/delete', requireLogin, blogController.deleteBlog);
 
 module.exports = router;

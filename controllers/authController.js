@@ -4,6 +4,7 @@ const nodemailer = require('nodemailer');
 const handlebars = require('handlebars');
 const fs = require('fs').promises;
 const path = require('path');
+const Settings = require('../models/Settings');
 
 const { isValidEmail } = require('../modules/checkValidForm');
 const { createLog } = require('../modules/logService');
@@ -24,14 +25,31 @@ function generateMagicToken(email) {
 }
 
 async function sendMagicLinkEmail(name, email, link) {
+    const settings = await Settings.findOne({ key: 'main' }).lean();
+
+    if (!settings || !settings.emailHost || !settings.emailPort || !settings.emailUser || !settings.emailPass) {
+        throw new Error('Email settings are not configured. Please update settings first.');
+    }
+
+    const port = Number(settings.emailPort);
+    const useSecure = port === 465 ? true : Boolean(settings.emailSecure);
+
     const transporter = nodemailer.createTransport({
-        host: 'smtp.zoho.eu',
-        port: 465,
-        secure: true,
+        host: settings.emailHost,
+        port,
+        secure: useSecure,
+        requireTLS: !useSecure,
+        ignoreTLS: false,
+        tls: {
+            rejectUnauthorized: false,
+        },
         auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
-        }
+            user: settings.emailUser,
+            pass: settings.emailPass,
+        },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 20000,
     });
 
     const templatePath = path.join(__dirname, '../views/emails/magicLink.hbs');
@@ -44,7 +62,7 @@ async function sendMagicLinkEmail(name, email, link) {
     });
 
     await transporter.sendMail({
-        from: `"iLearningHubb" <${process.env.EMAIL_USER}>`,
+        from: `"${settings.emailFromName || 'iLearningHubb'}" <${settings.emailFromAddress || settings.emailUser}>`,
         to: email,
         subject: 'Login to Dashboard - Magic Link',
         html,
@@ -70,7 +88,8 @@ exports.sendMagicLink = async (req, res) => {
         }
 
         const token = generateMagicToken(email);
-        const link = `${process.env.DOMAIN_URL}/auth-magic-link?token=${token}`;
+        const baseUrl = req.protocol && req.get ? `${req.protocol}://${req.get('host')}` : process.env.DOMAIN_URL;
+        const link = `${baseUrl}/auth-magic-link?token=${token}`;
         await sendMagicLinkEmail(user.name, user.email, link);
         res.json({ success: true });
         // res.json({ link });

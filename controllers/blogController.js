@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 const Blog = require('../models/Blog');
 const { createLog } = require('../modules/logService');
 
@@ -46,6 +49,40 @@ exports.blogs = async (req, res) => {
         userName: req.session.name,
         sidebarCollapsed: req.session.sidebarCollapsed ? req.session.sidebarCollapsed : false,
     });
+};
+
+exports.blogView = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const blog = await Blog.findById(id).lean();
+
+        if (!blog) {
+            return res.status(404).render('error', {
+                message: 'Blog not found',
+                activeMenu: 'blogs',
+                userId: req.session.userId,
+                userName: req.session.name,
+                sidebarCollapsed: req.session.sidebarCollapsed ? req.session.sidebarCollapsed : false,
+            });
+        }
+
+        return res.render('blog-view', {
+            blog,
+            activeMenu: 'blogs',
+            userId: req.session.userId,
+            userName: req.session.name,
+            sidebarCollapsed: req.session.sidebarCollapsed ? req.session.sidebarCollapsed : false,
+        });
+    } catch (error) {
+        console.error('Error loading blog view:', error);
+        return res.status(500).render('error', {
+            message: 'Failed to load blog',
+            activeMenu: 'blogs',
+            userId: req.session.userId,
+            userName: req.session.name,
+            sidebarCollapsed: req.session.sidebarCollapsed ? req.session.sidebarCollapsed : false,
+        });
+    }
 };
 
 exports.createBlog = async (req, res) => {
@@ -131,6 +168,43 @@ exports.updateBlog = async (req, res) => {
         return res.json({ message: 'Blog updated successfully' });
     } catch (error) {
         console.error('Error updating blog:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+exports.deleteBlog = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const blog = await Blog.findById(id).lean();
+        if (!blog) {
+            return res.status(404).json({ error: 'Blog not found' });
+        }
+
+        if (blog.coverImageUrl && typeof blog.coverImageUrl === 'string' && blog.coverImageUrl.startsWith('/uploads/')) {
+            const normalized = blog.coverImageUrl.replace(/^\//, '');
+            const filePath = path.join(__dirname, '..', normalized);
+            fs.unlink(filePath, (err) => {
+                if (err && err.code !== 'ENOENT') {
+                    console.error('Failed to delete blog cover image:', err);
+                }
+            });
+        }
+
+        await Blog.deleteOne({ _id: id });
+
+        createLog({
+            req,
+            action: 'delete',
+            entityType: 'blog',
+            entityId: id,
+            message: `Blog ${blog.title} deleted by ${req.session?.name || 'system'}`,
+            metadata: { title: blog.title, deletedBy: req.session?.name || 'system' },
+        });
+
+        return res.json({ message: 'Blog deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting blog:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
 };

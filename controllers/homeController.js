@@ -2,6 +2,8 @@ const User = require('../models/User');
 const Program = require('../models/Program');
 const Activity = require('../models/Activity');
 const Log = require('../models/Logs');
+const Page = require('../models/Page');
+const Blog = require('../models/Blog');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const handlebars = require('handlebars');
@@ -29,6 +31,8 @@ exports.getDashboard = async (req, res) => {
             userCount,
             recentPrograms,
             recentLogs,
+            recentPages,
+            recentBlogs,
         ] = await Promise.all([
             Program.countDocuments(),
             Program.countDocuments({ isActive: true }),
@@ -37,6 +41,8 @@ exports.getDashboard = async (req, res) => {
             User.countDocuments(),
             Program.find().sort({ createdAt: -1 }).limit(5).lean(),
             Log.find().sort({ createdAt: -1 }).limit(8).populate('user', 'name email').lean(),
+            Page.find().sort({ updatedAt: -1 }).limit(5).lean(),
+            Blog.find().sort({ createdAt: -1 }).limit(5).lean(),
         ]);
 
         res.render('home', {
@@ -50,6 +56,8 @@ exports.getDashboard = async (req, res) => {
             },
             recentPrograms,
             recentLogs,
+            recentPages,
+            recentBlogs,
             userId: req.session.userId,
             userName: req.session.name,
             sidebarCollapsed: req.session.sidebarCollapsed ? req.session.sidebarCollapsed : false,
