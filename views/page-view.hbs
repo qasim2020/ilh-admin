@@ -74,7 +74,7 @@
     const content = pageEditor ? pageEditor.getData() : $('#pageContentEditor').val();
     const pageType = '{{pageType}}';
     const pageKey = '{{pageKey}}';
-    const saveUrl = pageType === 'legal' ? `/legal/${pageKey}` : `/pages/${pageKey}`;
+    const saveUrl = `/pages/${pageKey}`;
 
     const $btn = $(this);
     const originalText = $btn.text();

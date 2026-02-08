@@ -43,19 +43,27 @@ const SettingsSchema = new mongoose.Schema(
             type: String,
             default: '',
         },
-        websiteBaseUrl: {
+        socialFacebook: {
             type: String,
             default: '',
         },
-        websiteApiUrl: {
+        socialInstagram: {
             type: String,
             default: '',
         },
-        websitePublicUrl: {
+        socialTwitter: {
             type: String,
             default: '',
         },
-        websiteContactEmail: {
+        socialLinkedIn: {
+            type: String,
+            default: '',
+        },
+        socialYouTube: {
+            type: String,
+            default: '',
+        },
+        socialTikTok: {
             type: String,
             default: '',
         },

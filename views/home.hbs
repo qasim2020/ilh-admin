@@ -125,7 +125,7 @@
                     <div class="list-group list-group-flush">
                         {{#if recentPages.length}}
                             {{#each recentPages}}
-                                <a class="list-group-item list-group-item-action" href="/{{#if (eq this.type 'legal')}}legal{{else}}pages{{/if}}/{{this.key}}">
+                                <a class="list-group-item list-group-item-action" href="/pages/{{this.key}}">
                                     <div class="d-flex w-100 align-items-center justify-content-between">
                                         <div>
                                             <div class="fw-semibold">{{this.title}}</div>

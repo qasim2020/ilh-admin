@@ -37,10 +37,12 @@ exports.updateSettings = async (req, res) => {
             emailSecure,
             emailFromName,
             emailFromAddress,
-            websiteBaseUrl,
-            websiteApiUrl,
-            websitePublicUrl,
-            websiteContactEmail,
+            socialFacebook,
+            socialInstagram,
+            socialTwitter,
+            socialLinkedIn,
+            socialYouTube,
+            socialTikTok,
         } = req.body;
 
         const updated = await Settings.findOneAndUpdate(
@@ -55,10 +57,12 @@ exports.updateSettings = async (req, res) => {
                 emailSecure: String(emailSecure) === 'true',
                 emailFromName: emailFromName?.trim() || '',
                 emailFromAddress: emailFromAddress?.trim() || '',
-                websiteBaseUrl: websiteBaseUrl?.trim() || '',
-                websiteApiUrl: websiteApiUrl?.trim() || '',
-                websitePublicUrl: websitePublicUrl?.trim() || '',
-                websiteContactEmail: websiteContactEmail?.trim() || '',
+                socialFacebook: socialFacebook?.trim() || '',
+                socialInstagram: socialInstagram?.trim() || '',
+                socialTwitter: socialTwitter?.trim() || '',
+                socialLinkedIn: socialLinkedIn?.trim() || '',
+                socialYouTube: socialYouTube?.trim() || '',
+                socialTikTok: socialTikTok?.trim() || '',
             },
             { new: true }
         ).lean();

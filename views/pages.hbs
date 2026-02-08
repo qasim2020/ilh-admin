@@ -17,7 +17,12 @@
       <div class="col-sm-6 col-lg-4">
         <div class="card h-100">
           <div class="card-body">
-            <h3 class="card-title mb-2">{{this.title}}</h3>
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <h3 class="card-title mb-0">{{this.title}}</h3>
+              <span class="badge {{#if (eq this.typeLabel 'Legal')}}bg-azure-lt text-azure{{else}}bg-secondary-lt text-secondary{{/if}}">
+                {{this.typeLabel}}
+              </span>
+            </div>
             <p class="text-muted mb-4">{{this.description}}</p>
             <div class="d-flex gap-2">
               <a href="{{this.viewUrl}}" class="btn btn-outline-secondary btn-sm w-100">View</a>

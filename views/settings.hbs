@@ -49,24 +49,32 @@
 
         <div class="card mt-3">
           <div class="card-header">
-            <h3 class="card-title">Website Connection</h3>
+            <h3 class="card-title">Social Media Links</h3>
           </div>
           <div class="card-body">
             <div class="mb-3">
-              <label class="form-label">Website Base URL</label>
-              <input type="text" id="websiteBaseUrl" class="form-control" placeholder="https://ilearninghubb.com" value="{{settings.websiteBaseUrl}}">
+              <label class="form-label">Facebook URL</label>
+              <input type="text" id="socialFacebook" class="form-control" placeholder="https://facebook.com/ilearninghubb" value="{{settings.socialFacebook}}">
             </div>
             <div class="mb-3">
-              <label class="form-label">Website Public URL</label>
-              <input type="text" id="websitePublicUrl" class="form-control" placeholder="https://www.ilearninghubb.com" value="{{settings.websitePublicUrl}}">
+              <label class="form-label">Instagram URL</label>
+              <input type="text" id="socialInstagram" class="form-control" placeholder="https://instagram.com/ilearninghubb" value="{{settings.socialInstagram}}">
             </div>
             <div class="mb-3">
-              <label class="form-label">Website API URL</label>
-              <input type="text" id="websiteApiUrl" class="form-control" placeholder="https://api.ilearninghubb.com" value="{{settings.websiteApiUrl}}">
+              <label class="form-label">X (Twitter) URL</label>
+              <input type="text" id="socialTwitter" class="form-control" placeholder="https://x.com/ilearninghubb" value="{{settings.socialTwitter}}">
             </div>
             <div class="mb-3">
-              <label class="form-label">Website Contact Email</label>
-              <input type="email" id="websiteContactEmail" class="form-control" placeholder="info@ilearninghubb.com" value="{{settings.websiteContactEmail}}">
+              <label class="form-label">LinkedIn URL</label>
+              <input type="text" id="socialLinkedIn" class="form-control" placeholder="https://linkedin.com/company/ilearninghubb" value="{{settings.socialLinkedIn}}">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">YouTube URL</label>
+              <input type="text" id="socialYouTube" class="form-control" placeholder="https://youtube.com/@ilearninghubb" value="{{settings.socialYouTube}}">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">TikTok URL</label>
+              <input type="text" id="socialTikTok" class="form-control" placeholder="https://tiktok.com/@ilearninghubb" value="{{settings.socialTikTok}}">
             </div>
           </div>
         </div>
@@ -165,10 +173,12 @@
       emailSecure: $('#emailSecure').is(':checked'),
       emailFromName: $('#emailFromName').val().trim(),
       emailFromAddress: $('#emailFromAddress').val().trim(),
-      websiteBaseUrl: $('#websiteBaseUrl').val().trim(),
-      websitePublicUrl: $('#websitePublicUrl').val().trim(),
-      websiteApiUrl: $('#websiteApiUrl').val().trim(),
-      websiteContactEmail: $('#websiteContactEmail').val().trim(),
+      socialFacebook: $('#socialFacebook').val().trim(),
+      socialInstagram: $('#socialInstagram').val().trim(),
+      socialTwitter: $('#socialTwitter').val().trim(),
+      socialLinkedIn: $('#socialLinkedIn').val().trim(),
+      socialYouTube: $('#socialYouTube').val().trim(),
+      socialTikTok: $('#socialTikTok').val().trim(),
     };
 
     const $btn = $(this);

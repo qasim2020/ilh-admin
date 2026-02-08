@@ -61,7 +61,7 @@ const sendInviteEmail = async (user, req) => {
     const templateSource = await fs.readFile(templatePath, 'utf8');
     const compiledTemplate = handlebars.compile(templateSource);
 
-    const fallbackDomain = settings.websitePublicUrl || settings.websiteBaseUrl || process.env.DOMAIN_URL || '';
+    const fallbackDomain = process.env.DOMAIN_URL || '';
     const baseUrl = req?.protocol && req?.get ? `${req.protocol}://${req.get('host')}` : fallbackDomain;
     const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: '60m' });
     const magicLink = baseUrl ? `${baseUrl}/auth-magic-link?token=${token}` : '';
