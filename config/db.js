@@ -1,11 +1,60 @@
 const mongoose = require("mongoose");
 const User = require('../models/User');
 const Page = require('../models/Page');
+const Settings = require('../models/Settings');
 
 async function connectDB() {
   await mongoose.connect(process.env.MONGO_URI);
   await createDefaultUser();
   await seedDefaultPages();
+  await seedSettingsFromEnv();
+}
+
+function parseEnvBool(value) {
+  if (value === undefined || value === null) return undefined;
+  const normalized = String(value).trim().toLowerCase();
+  if (['true', '1', 'yes', 'y'].includes(normalized)) return true;
+  if (['false', '0', 'no', 'n'].includes(normalized)) return false;
+  return undefined;
+}
+
+async function seedSettingsFromEnv() {
+  const envHost = process.env.HOST?.trim();
+  const envPort = process.env.PORT;
+  const envSecure = parseEnvBool(process.env.SSL);
+  const envUser = process.env.USER?.trim();
+  const envPass = process.env.PASS?.trim();
+  const envFromName = process.env.FROM_NAME?.trim();
+
+  const existing = await Settings.findOne({ key: 'main' }).lean();
+  if (!existing) {
+    await Settings.create({
+      key: 'main',
+      emailHost: envHost || '',
+      emailPort: envPort ? Number(envPort) : 587,
+      emailSecure: envSecure ?? false,
+      emailUser: envUser || '',
+      emailPass: envPass || '',
+      emailFromName: envFromName || 'iLearningHubb',
+    });
+    return;
+  }
+
+  const updates = {};
+  if (!existing.emailHost && envHost) updates.emailHost = envHost;
+  if ((existing.emailPort === undefined || existing.emailPort === null) && envPort) {
+    updates.emailPort = Number(envPort);
+  }
+  if ((existing.emailSecure === undefined || existing.emailSecure === null) && envSecure !== undefined) {
+    updates.emailSecure = envSecure;
+  }
+  if (!existing.emailUser && envUser) updates.emailUser = envUser;
+  if (!existing.emailPass && envPass) updates.emailPass = envPass;
+  if (!existing.emailFromName && envFromName) updates.emailFromName = envFromName;
+
+  if (Object.keys(updates).length > 0) {
+    await Settings.updateOne({ key: 'main' }, { $set: updates });
+  }
 }
 
 async function createDefaultUser() {
