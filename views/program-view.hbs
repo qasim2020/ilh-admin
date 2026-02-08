@@ -113,7 +113,8 @@
 {{> editProgramModal }}
 
 <script>
-  const cmsBasePath = window.location.pathname.split('/programs')[0] || '';
+  var cmsBasePath = window.cmsBasePath || window.location.pathname.split('/programs')[0] || '';
+  window.cmsBasePath = cmsBasePath;
 
   $('#programGalleryInput').on('change', function () {
     const files = this.files;

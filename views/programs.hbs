@@ -97,9 +97,10 @@
 {{> emptyProgramModal }}
 
 <script>
-  const cmsBasePath = window.location.pathname.split('/programs')[0] || '';
+  var cmsBasePath = window.cmsBasePath || window.location.pathname.split('/programs')[0] || '';
+  window.cmsBasePath = cmsBasePath;
 
-  const getEditProgramModal = function (elem) {
+  window.getEditProgramModal = function (elem) {
     const programId = $(elem).attr("data-id");
 
     const modalExists = $(document).find(`#button-${programId}`).length > 0;
@@ -121,7 +122,7 @@
         alert(xhr.responseText);
       }
     });
-  }
+  };
 
   $(document).on('click', '.delete-program', function () {
     const programId = $(this).attr('data-id');

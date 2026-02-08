@@ -3,7 +3,6 @@ const fs = require("fs");
 const path = require("path");
 
 const express = require('express');
-const app = express();
 const router = express.Router();
 const requireLogin = require('../modules/authenticate');
 const programController = require('../controllers/programController');
@@ -28,7 +27,6 @@ const upload = multer({ storage: storage });
 
 router.post("/upload-program-image", upload.single("programImage"), (req, res) => {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-    // Return the uploaded image URL
     createLog({
         req,
         action: 'upload',

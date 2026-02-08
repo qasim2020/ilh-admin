@@ -114,7 +114,8 @@
     data-bs-target="#modal-{{program._id}}"></button>
 
 <script>
-    const cmsBasePath = window.location.pathname.split('/programs')[0] || '';
+    var cmsBasePath = window.cmsBasePath || window.location.pathname.split('/programs')[0] || '';
+    window.cmsBasePath = cmsBasePath;
     let programEditor{{program._id}}, featuresEditor{{program._id}};
 
     ClassicEditor
