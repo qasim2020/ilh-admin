@@ -192,8 +192,8 @@
         const title = modal.find('input[name="title"]').val().trim();
         const age = modal.find('input[name="ageRange"]').val().trim();
         const duration = modal.find('input[name="duration"]').val().trim();
-        const description = programEditor{{program._id}}.getData().trim();
-        const specialFeatures = featuresEditor{{program._id}}.getData().trim();
+        const description = programEditor{{program._id}} ? programEditor{{program._id}}.getData().trim() : '';
+        const specialFeatures = featuresEditor{{program._id}} ? featuresEditor{{program._id}}.getData().trim() : '';
         const gender = modal.find('select[name="gender"]').val();
         const status = modal.find("input[name='status']:checked").val();
 

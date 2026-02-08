@@ -54,16 +54,17 @@ exports.programView = async (req, res) => {
 
 exports.createProgram = async (req, res) => {
     try {
-        const { imageUrl, title, age, duration, description, specialFeatures, gender, status } = req.body;
+        const { imageUrl, title, age, ageRange, duration, description, specialFeatures, gender, status } = req.body;
+        const isActive = status === 'active';
         const program = new Program({
             imageUrl,
             title,
-            ageRange: age,
+            ageRange: ageRange || age,
             duration,
             description,
             specialFeatures,
             gender,
-            status
+            isActive
         });
         await program.save();
         createLog({
@@ -107,6 +108,7 @@ exports.updateProgram = async (req, res) => {
             imageUrl,
             title,
             age,
+            ageRange,
             duration,
             description,
             specialFeatures,
@@ -121,7 +123,7 @@ exports.updateProgram = async (req, res) => {
             {
                 imageUrl,
                 title,
-                ageRange: age,
+                ageRange: ageRange || age,
                 duration,
                 description,
                 specialFeatures,
