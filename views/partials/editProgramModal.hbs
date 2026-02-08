@@ -114,6 +114,7 @@
     data-bs-target="#modal-{{program._id}}"></button>
 
 <script>
+    const cmsBasePath = window.location.pathname.split('/programs')[0] || '';
     let programEditor{{program._id}}, featuresEditor{{program._id}};
 
     ClassicEditor
@@ -149,7 +150,7 @@
 
         if (previousImageUrl{{program._id}}) {
             $.ajax({
-                url: "delete-program-image",
+                url: `${cmsBasePath}/delete-program-image`,
                 type: "POST",
                 data: { imageUrl: previousImageUrl{{program._id}} },
                 success: function (res) {
@@ -165,7 +166,7 @@
         formData.append("programImage", file);
 
         $.ajax({
-            url: "upload-program-image",
+            url: `${cmsBasePath}/upload-program-image`,
             type: "POST",
             data: formData,
             contentType: false,
@@ -212,7 +213,7 @@
         $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...');
 
         $.ajax({
-            url: "programs/{{program._id}}",
+            url: `${cmsBasePath}/programs/{{program._id}}`,
             type: "POST",
             data,
             success: function () {
