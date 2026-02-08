@@ -192,6 +192,14 @@ const expiresOn = (createdAt, months) => {
     return moment(createdAt).add(months, 'months').format('DD-MM-YYYY');
 };
 
+const truncate = (value, maxLength) => {
+    if (value === null || value === undefined) return '';
+    const text = value.toString();
+    const limit = Number(maxLength) || 0;
+    if (!limit || text.length <= limit) return text;
+    return `${text.slice(0, limit)}...`;
+};
+
 module.exports = { 
     or,
     eq,
@@ -223,4 +231,5 @@ module.exports = {
     startsWith,
     lte,
     includes,
+    truncate,
 };

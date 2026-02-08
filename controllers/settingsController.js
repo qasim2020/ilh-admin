@@ -43,7 +43,17 @@ exports.updateSettings = async (req, res) => {
             socialLinkedIn,
             socialYouTube,
             socialTikTok,
+            ticketEmails,
         } = req.body;
+
+
+        const normalizedTicketEmails = Array.isArray(ticketEmails)
+            ? ticketEmails.map((email) => String(email).trim()).filter(Boolean)
+            : (ticketEmails || '')
+                .split(/[,\n]/)
+                .map((email) => email.trim())
+                .filter(Boolean);
+
 
         const updated = await Settings.findOneAndUpdate(
             { key: 'main' },
@@ -63,6 +73,7 @@ exports.updateSettings = async (req, res) => {
                 socialLinkedIn: socialLinkedIn?.trim() || '',
                 socialYouTube: socialYouTube?.trim() || '',
                 socialTikTok: socialTikTok?.trim() || '',
+                ticketEmails: normalizedTicketEmails,
             },
             { new: true }
         ).lean();

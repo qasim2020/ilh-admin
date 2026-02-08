@@ -67,6 +67,10 @@ const SettingsSchema = new mongoose.Schema(
             type: String,
             default: '',
         },
+        ticketEmails: {
+            type: [String],
+            default: [],
+        },
     },
     { timestamps: true }
 );

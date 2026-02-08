@@ -122,6 +122,22 @@
             </div>
           </div>
         </div>
+
+        <div class="card mt-3">
+          <div class="card-header">
+            <h3 class="card-title">Ticket Emails</h3>
+          </div>
+          <div class="card-body">
+            <p class="text-muted">Add the email addresses that should receive ticket notifications.</p>
+            <div class="input-group mb-3">
+              <input type="email" id="ticketEmailInput" class="form-control" placeholder="name@example.com">
+              <button class="btn btn-outline-primary" type="button" id="addTicketEmail">Add</button>
+            </div>
+            <div class="list-group" id="ticketEmailList"></div>
+            <input type="hidden" id="ticketEmailsValue" value="">
+            <div class="form-hint mt-2">Press Add or use comma/enter to add multiple emails.</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -162,6 +178,71 @@
     });
   });
 
+  const renderTicketEmailList = function () {
+    const $list = $('#ticketEmailList');
+    $list.empty();
+
+    if (!ticketEmails.length) {
+      $list.append('<div class="text-muted">No emails added yet.</div>');
+      $('#ticketEmailsValue').val('');
+      return;
+    }
+
+    ticketEmails.forEach((email) => {
+      const row = $(
+        `<div class="list-group-item d-flex align-items-center justify-content-between">
+          <div class="text-body">${email}</div>
+          <button type="button" class="btn btn-outline-danger btn-sm remove-ticket-email" data-email="${email}">
+            Delete
+          </button>
+        </div>`
+      );
+      $list.append(row);
+    });
+
+    $('#ticketEmailsValue').val(ticketEmails.join(','));
+  };
+
+  const addTicketEmails = function (raw) {
+    if (!raw) return;
+    const values = raw
+      .split(/[,\n]/)
+      .map((value) => value.trim())
+      .filter(Boolean);
+
+    values.forEach((email) => {
+      if (!ticketEmails.includes(email)) {
+        ticketEmails.push(email);
+      }
+    });
+    renderTicketEmailList();
+  };
+
+  const initialTicketEmails = {{#if settings.ticketEmails}}{{{json settings.ticketEmails}}}{{else}}[]{{/if}};
+  let ticketEmails = Array.isArray(initialTicketEmails) ? initialTicketEmails : [];
+  renderTicketEmailList();
+
+  $('#addTicketEmail').on('click', function () {
+    const value = $('#ticketEmailInput').val();
+    addTicketEmails(value);
+    $('#ticketEmailInput').val('');
+  });
+
+  $('#ticketEmailInput').on('keydown', function (event) {
+    if (event.key === 'Enter' || event.key === ',') {
+      event.preventDefault();
+      const value = $(this).val();
+      addTicketEmails(value);
+      $(this).val('');
+    }
+  });
+
+  $(document).on('click', '.remove-ticket-email', function () {
+    const email = $(this).data('email');
+    ticketEmails = ticketEmails.filter((value) => value !== email);
+    renderTicketEmailList();
+  });
+
   $('#saveSettingsBtn').on('click', function () {
     const data = {
       brandName: $('#settingsBrandName').val().trim(),
@@ -179,11 +260,17 @@
       socialLinkedIn: $('#socialLinkedIn').val().trim(),
       socialYouTube: $('#socialYouTube').val().trim(),
       socialTikTok: $('#socialTikTok').val().trim(),
+      ticketEmails: ticketEmails,
     };
 
     const $btn = $(this);
+    const $addBtn = $('#addTicketEmail');
     const originalText = $btn.text();
+    const originalAddText = $addBtn.text();
     $btn.prop('disabled', true).text('Saving...');
+    $addBtn
+      .prop('disabled', true)
+      .html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
 
     $.ajax({
       url: '/settings',
@@ -197,6 +284,7 @@
       },
       complete: function () {
         $btn.prop('disabled', false).text(originalText);
+        $addBtn.prop('disabled', false).text(originalAddText);
       }
     });
   });

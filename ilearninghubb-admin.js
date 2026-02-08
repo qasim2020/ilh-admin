@@ -7,6 +7,7 @@ const MongoStore = require("connect-mongo");
 const path = require('path');
 const hbsHelpers = require('./modules/helpers');
 const Settings = require('./models/Settings');
+const Ticket = require('./models/Ticket');
 
 const authRoutes = require("./routes/authRoutes")
 const homeRoutes = require("./routes/homeRoutes")
@@ -15,6 +16,7 @@ const userRoutes = require("./routes/userRoutes")
 const contentRoutes = require("./routes/contentRoutes")
 const blogRoutes = require("./routes/blogRoutes")
 const settingsRoutes = require("./routes/settingsRoutes")
+const ticketRoutes = require("./routes/ticketRoutes")
 
 dotenv.config()
 connectDB()
@@ -51,6 +53,24 @@ app.use(async (req, res, next) => {
     next();
 });
 
+app.use(async (req, res, next) => {
+    if (!req.session?.userId) {
+        res.locals.unreadTicketsCount = 0;
+        return next();
+    }
+
+    try {
+        const unreadCount = await Ticket.countDocuments({
+            $or: [{ isRead: false }, { isRead: { $exists: false } }],
+        });
+        res.locals.unreadTicketsCount = unreadCount || 0;
+    } catch (error) {
+        console.error('Failed to load unread tickets count:', error);
+        res.locals.unreadTicketsCount = 0;
+    }
+    next();
+});
+
 app.engine(
     "hbs",
     exphbs.engine({
@@ -76,6 +96,7 @@ app.use(userRoutes);
 app.use(contentRoutes);
 app.use(blogRoutes);
 app.use(settingsRoutes);
+app.use(ticketRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on http://localhost:${process.env.PORT}`)
