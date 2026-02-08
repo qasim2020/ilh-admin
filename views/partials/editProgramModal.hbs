@@ -149,7 +149,7 @@
 
         if (previousImageUrl{{program._id}}) {
             $.ajax({
-                url: "/delete-program-image",
+                url: "delete-program-image",
                 type: "POST",
                 data: { imageUrl: previousImageUrl{{program._id}} },
                 success: function (res) {
@@ -165,7 +165,7 @@
         formData.append("programImage", file);
 
         $.ajax({
-            url: "/upload-program-image",
+            url: "upload-program-image",
             type: "POST",
             data: formData,
             contentType: false,
@@ -212,7 +212,7 @@
         $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...');
 
         $.ajax({
-            url: "/programs/{{program._id}}",
+            url: "programs/{{program._id}}",
             type: "POST",
             data,
             success: function () {

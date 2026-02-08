@@ -126,7 +126,7 @@
     $input.prop('disabled', true);
 
     $.ajax({
-      url: '/programs/{{program._id}}/gallery',
+      url: 'programs/{{program._id}}/gallery',
       type: 'POST',
       data: formData,
       contentType: false,
@@ -184,7 +184,7 @@
     }
 
     $.ajax({
-      url: '/programs/{{program._id}}/gallery/delete',
+      url: 'programs/{{program._id}}/gallery/delete',
       type: 'POST',
       data: { filename, url },
       success: function () {

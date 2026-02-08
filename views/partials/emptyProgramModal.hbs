@@ -138,7 +138,7 @@
 
         if (previousImageUrl) {
             $.ajax({
-                url: "/delete-program-image",
+                url: "delete-program-image",
                 type: "POST",
                 data: { imageUrl: previousImageUrl },
                 success: function (res) {
@@ -154,7 +154,7 @@
         formData.append("programImage", file);
 
         $.ajax({
-            url: "/upload-program-image",
+            url: "upload-program-image",
             type: "POST",
             data: formData,
             contentType: false,
@@ -197,7 +197,7 @@
         };
 
         $.ajax({
-            url: "/programs",
+            url: "programs",
             type: "POST",
             data,
             success: function (res) {

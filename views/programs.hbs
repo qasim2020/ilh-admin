@@ -108,7 +108,7 @@
     }
 
     $.ajax({
-      url: `/getEditProgramModal/${programId}`,
+      url: `getEditProgramModal/${programId}`,
       type: 'GET',
       contentType: 'application/json',
       success: function (response) {
@@ -130,7 +130,7 @@
     if (!confirmed) return;
 
     $.ajax({
-      url: `/programs/${programId}/delete`,
+      url: `programs/${programId}/delete`,
       type: 'POST',
       contentType: 'application/json',
       success: function () {
