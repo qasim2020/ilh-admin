@@ -17,6 +17,7 @@ const contentRoutes = require("./routes/contentRoutes")
 const blogRoutes = require("./routes/blogRoutes")
 const settingsRoutes = require("./routes/settingsRoutes")
 const ticketRoutes = require("./routes/ticketRoutes")
+const subscriptionRoutes = require("./routes/subscriptionRoutes")
 
 dotenv.config()
 connectDB()
@@ -38,9 +39,9 @@ app.use(session({
     }
 }));
 
-app.use(express.urlencoded({ extended: true }))
-app.use(express.json())
-app.use(express.static("public"))
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ limit: '100mb', extended: true }));
+app.use(express.static("public"));
 
 app.use(async (req, res, next) => {
     try {
@@ -97,6 +98,7 @@ app.use(contentRoutes);
 app.use(blogRoutes);
 app.use(settingsRoutes);
 app.use(ticketRoutes);
+app.use(subscriptionRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on http://localhost:${process.env.PORT}`)

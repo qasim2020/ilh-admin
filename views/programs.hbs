@@ -97,8 +97,7 @@
 {{> emptyProgramModal }}
 
 <script>
-  var cmsBasePath = window.cmsBasePath || window.location.pathname.split('/programs')[0] || '';
-  window.cmsBasePath = cmsBasePath;
+  
 
   window.getEditProgramModal = function (elem) {
     const programId = $(elem).attr("data-id");
@@ -111,7 +110,7 @@
     }
 
     $.ajax({
-      url: `${cmsBasePath}/getEditProgramModal/${programId}`,
+      url: `/getEditProgramModal/${programId}`,
       type: 'GET',
       contentType: 'application/json',
       success: function (response) {
@@ -133,7 +132,7 @@
     if (!confirmed) return;
 
     $.ajax({
-      url: `${cmsBasePath}/programs/${programId}/delete`,
+      url: `/programs/${programId}/delete`,
       type: 'POST',
       contentType: 'application/json',
       success: function () {

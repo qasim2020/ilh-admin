@@ -104,8 +104,7 @@
 </div>
 
 <script>
-    var cmsBasePath = window.cmsBasePath || window.location.pathname.split('/programs')[0] || '';
-    window.cmsBasePath = cmsBasePath;
+    
 
     let programEditor, featuresEditor;
 
@@ -140,7 +139,7 @@
 
         if (previousImageUrl) {
             $.ajax({
-                url: `${cmsBasePath}/delete-program-image`,
+                url: `/delete-program-image`,
                 type: "POST",
                 data: { imageUrl: previousImageUrl },
                 success: function (res) {
@@ -156,7 +155,7 @@
         formData.append("programImage", file);
 
         $.ajax({
-            url: `${cmsBasePath}/upload-program-image`,
+            url: `/upload-program-image`,
             type: "POST",
             data: formData,
             contentType: false,
@@ -199,7 +198,7 @@
         };
 
         $.ajax({
-            url: `${cmsBasePath}/programs`,
+            url: `/programs`,
             type: "POST",
             data,
             success: function (res) {

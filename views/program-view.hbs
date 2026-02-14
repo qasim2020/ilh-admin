@@ -113,9 +113,6 @@
 {{> editProgramModal }}
 
 <script>
-  var cmsBasePath = window.cmsBasePath || window.location.pathname.split('/programs')[0] || '';
-  window.cmsBasePath = cmsBasePath;
-
   $('#programGalleryInput').on('change', function () {
     const files = this.files;
     if (!files || files.length === 0) return;
@@ -129,7 +126,7 @@
     $input.prop('disabled', true);
 
     $.ajax({
-      url: `${cmsBasePath}/programs/{{program._id}}/gallery`,
+      url: '/programs/{{program._id}}/gallery',
       type: 'POST',
       data: formData,
       contentType: false,
@@ -187,7 +184,7 @@
     }
 
     $.ajax({
-      url: `${cmsBasePath}/programs/{{program._id}}/gallery/delete`,
+      url: '/programs/{{program._id}}/gallery/delete',
       type: 'POST',
       data: { filename, url },
       success: function () {

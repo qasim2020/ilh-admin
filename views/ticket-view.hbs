@@ -98,8 +98,6 @@
 </div>
 
 <script>
-  const cmsBasePath = window.location.pathname.split('/tickets')[0] || '';
-
   $('#ticket-toggle').on('click', function () {
     const $button = $(this);
     const $badge = $('#ticket-status-badge');
@@ -109,7 +107,7 @@
     if (!action) return;
 
     $.ajax({
-      url: `${cmsBasePath}/tickets/${ticketId}/${action}`,
+      url: `/tickets/${ticketId}/${action}`,
       type: 'POST',
       success: function () {
         const isRead = action === 'read';

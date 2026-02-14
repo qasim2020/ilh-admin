@@ -103,8 +103,6 @@
 {{/if}}
 
 <script>
-  const cmsBasePath = window.location.pathname.split('/tickets')[0] || '';
-
   $(document).on('click', '.toggle-ticket', function () {
     const $row = $(this).closest('tr');
     const ticketId = $row.data('ticket-id');
@@ -113,7 +111,7 @@
     if (!ticketId || !action) return;
 
     $.ajax({
-      url: `${cmsBasePath}/tickets/${ticketId}/${action}`,
+      url: `/tickets/${ticketId}/${action}`,
       type: 'POST',
       success: function () {
         window.location.reload();
