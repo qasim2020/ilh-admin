@@ -1,5 +1,4 @@
 const User = require('../models/User');
-const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const handlebars = require('handlebars');
 const fs = require('fs').promises;
@@ -8,6 +7,7 @@ const Settings = require('../models/Settings');
 
 const { isValidEmail, isStrongPassword } = require('../modules/checkValidForm');
 const { verifyPassword, hashPassword } = require('../modules/password');
+const { generateResetToken, hashResetToken } = require('../modules/resetToken');
 const { createLog } = require('../modules/logService');
 
 exports.renderLoginPage = async (req, res) => {
@@ -20,10 +20,6 @@ exports.renderLoginPage = async (req, res) => {
         });
     }
 };
-
-function generateResetToken(email, passwordHash) {
-    return jwt.sign({ email, purpose: 'password-reset', passwordHash }, process.env.JWT_SECRET, { expiresIn: '60m' });
-}
 
 async function sendResetPasswordEmail(name, email, resetLink) {
     const settings = await Settings.findOne({ key: 'main' }).lean();
@@ -168,7 +164,10 @@ exports.forgotPassword = async (req, res) => {
             });
         }
 
-        const token = generateResetToken(user.email, user.password || '');
+        const token = generateResetToken();
+        user.passwordResetToken = hashResetToken(token);
+        user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000);
+        await user.save();
         const baseUrl = req.protocol && req.get ? `${req.protocol}://${req.get('host')}` : process.env.DOMAIN_URL;
         const resetLink = `${baseUrl}/reset-password?token=${token}`;
         await sendResetPasswordEmail(user.name, user.email, resetLink);
@@ -196,7 +195,18 @@ exports.renderResetPasswordPage = async (req, res) => {
             });
         }
 
-        jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findOne({
+            passwordResetToken: hashResetToken(token),
+            passwordResetExpires: { $gt: new Date() },
+        }).lean();
+
+        if (!user) {
+            return res.render('reset-password', {
+                layout: 'auth',
+                note: 'Invalid or expired reset link.',
+            });
+        }
+
         return res.render('reset-password', { layout: 'auth', token });
     } catch (e) {
         return res.render('reset-password', {
@@ -240,30 +250,20 @@ exports.resetPassword = async (req, res) => {
             });
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        if (decoded.purpose !== 'password-reset') {
-            return res.render('reset-password', {
-                layout: 'auth',
-                note: 'Invalid reset link.',
-            });
-        }
-
-        const user = await User.findOne({ email: decoded.email });
+        const user = await User.findOne({
+            passwordResetToken: hashResetToken(token),
+            passwordResetExpires: { $gt: new Date() },
+        });
         if (!user) {
             return res.render('reset-password', {
                 layout: 'auth',
-                note: 'User not found.',
-            });
-        }
-
-        if ((user.password || '') !== (decoded.passwordHash || '')) {
-            return res.render('reset-password', {
-                layout: 'auth',
-                note: 'Reset link is no longer valid. Please request a new one.',
+                note: 'Invalid or expired reset link. Please request a new one.',
             });
         }
 
         user.password = hashPassword(password);
+        user.passwordResetToken = undefined;
+        user.passwordResetExpires = undefined;
         await user.save();
 
         createLog({

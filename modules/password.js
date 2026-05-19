@@ -14,7 +14,7 @@ function verifyPassword(password, storedHash) {
 }
 
 function generateTemporaryPassword(length = 12) {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*';
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+[]{};:,.?';
     let password = '';
     for (let i = 0; i < length; i += 1) {
         password += chars[crypto.randomInt(0, chars.length)];
