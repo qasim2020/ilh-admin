@@ -168,7 +168,11 @@ exports.forgotPassword = async (req, res) => {
         user.passwordResetToken = hashResetToken(token);
         user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000);
         await user.save();
-        const baseUrl = req.protocol && req.get ? `${req.protocol}://${req.get('host')}` : process.env.DOMAIN_URL;
+        const fallbackDomain = process.env.DOMAIN_URL || '';
+        const baseUrl = req.protocol && req.get ? `${req.protocol}://${req.get('host')}` : fallbackDomain;
+        if (!baseUrl) {
+            throw new Error('Domain URL is not configured');
+        }
         const resetLink = `${baseUrl}/reset-password?token=${token}`;
         await sendResetPasswordEmail(user.name, user.email, resetLink);
 
