@@ -6,7 +6,6 @@ const handlebars = require('handlebars');
 const fs = require('fs').promises;
 const path = require('path');
 const { createLog } = require('../modules/logService');
-const { hashPassword, generateTemporaryPassword } = require('../modules/password');
 const { generateResetToken, hashResetToken } = require('../modules/resetToken');
 
 exports.users = async (req, res) => {
@@ -64,6 +63,9 @@ const sendInviteEmail = async (user, req) => {
 
     const fallbackDomain = process.env.DOMAIN_URL || '';
     const baseUrl = req?.protocol && req?.get ? `${req.protocol}://${req.get('host')}` : fallbackDomain;
+    if (!baseUrl) {
+        throw new Error('Domain URL is not configured');
+    }
     const token = generateResetToken();
     await User.updateOne(
         { _id: user._id },
@@ -105,12 +107,10 @@ exports.createUser = async (req, res) => {
     try {
         const { name, email, status } = req.body;
         const isActive = status === 'active';
-        const temporaryPassword = generateTemporaryPassword();
 
         const user = new User({
             name,
             email,
-            password: hashPassword(temporaryPassword),
             isActive,
         });
 

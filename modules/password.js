@@ -13,13 +13,4 @@ function verifyPassword(password, storedHash) {
     return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(originalHash, 'hex'));
 }
 
-function generateTemporaryPassword(length = 12) {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+[]{};:,.?';
-    let password = '';
-    for (let i = 0; i < length; i += 1) {
-        password += chars[crypto.randomInt(0, chars.length)];
-    }
-    return password;
-}
-
-module.exports = { hashPassword, verifyPassword, generateTemporaryPassword };
+module.exports = { hashPassword, verifyPassword };
