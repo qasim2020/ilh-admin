@@ -2,11 +2,11 @@ const User = require('../models/User');
 const Log = require('../models/Logs');
 const Settings = require('../models/Settings');
 const nodemailer = require('nodemailer');
-const jwt = require('jsonwebtoken');
 const handlebars = require('handlebars');
 const fs = require('fs').promises;
 const path = require('path');
 const { createLog } = require('../modules/logService');
+const { generateResetToken, hashResetToken } = require('../modules/resetToken');
 
 exports.users = async (req, res) => {
     try {
@@ -63,13 +63,26 @@ const sendInviteEmail = async (user, req) => {
 
     const fallbackDomain = process.env.DOMAIN_URL || '';
     const baseUrl = req?.protocol && req?.get ? `${req.protocol}://${req.get('host')}` : fallbackDomain;
-    const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: '60m' });
-    const magicLink = baseUrl ? `${baseUrl}/auth-magic-link?token=${token}` : '';
+    if (!baseUrl) {
+        throw new Error('Domain URL is not configured');
+    }
+    const token = generateResetToken();
+    await User.updateOne(
+        { _id: user._id },
+        {
+            $set: {
+                passwordResetToken: hashResetToken(token),
+                passwordResetExpires: new Date(Date.now() + 60 * 60 * 1000),
+            },
+        }
+    );
+    const resetLink = baseUrl ? `${baseUrl}/reset-password?token=${token}` : '';
+    const loginUrl = baseUrl ? `${baseUrl}/login` : '';
 
     const html = compiledTemplate({
         name: user.name,
-        loginUrl: magicLink,
-        magicLink,
+        loginUrl,
+        resetLink,
         brandName: settings.brandName || 'iLearningHubb',
     });
 
