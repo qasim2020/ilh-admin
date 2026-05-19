@@ -7,6 +7,7 @@ const handlebars = require('handlebars');
 const fs = require('fs').promises;
 const path = require('path');
 const { createLog } = require('../modules/logService');
+const { hashPassword, generateTemporaryPassword } = require('../modules/password');
 
 exports.users = async (req, res) => {
     try {
@@ -30,7 +31,7 @@ exports.users = async (req, res) => {
     }
 };
 
-const sendInviteEmail = async (user, req) => {
+const sendInviteEmail = async (user, req, options = {}) => {
     const settings = await Settings.findOne({ key: 'main' }).lean();
     if (!settings || !settings.emailHost || !settings.emailPort || !settings.emailUser || !settings.emailPass) {
         throw new Error('Email settings are not configured');
@@ -63,13 +64,15 @@ const sendInviteEmail = async (user, req) => {
 
     const fallbackDomain = process.env.DOMAIN_URL || '';
     const baseUrl = req?.protocol && req?.get ? `${req.protocol}://${req.get('host')}` : fallbackDomain;
-    const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: '60m' });
-    const magicLink = baseUrl ? `${baseUrl}/auth-magic-link?token=${token}` : '';
+    const token = jwt.sign({ email: user.email, purpose: 'password-reset', passwordHash: user.password || '' }, process.env.JWT_SECRET, { expiresIn: '60m' });
+    const resetLink = baseUrl ? `${baseUrl}/reset-password?token=${token}` : '';
+    const loginUrl = baseUrl ? `${baseUrl}/login` : '';
 
     const html = compiledTemplate({
         name: user.name,
-        loginUrl: magicLink,
-        magicLink,
+        loginUrl,
+        resetLink,
+        temporaryPassword: options.temporaryPassword || null,
         brandName: settings.brandName || 'iLearningHubb',
     });
 
@@ -94,10 +97,12 @@ exports.createUser = async (req, res) => {
     try {
         const { name, email, status } = req.body;
         const isActive = status === 'active';
+        const temporaryPassword = generateTemporaryPassword();
 
         const user = new User({
             name,
             email,
+            password: hashPassword(temporaryPassword),
             isActive,
         });
 
@@ -112,7 +117,7 @@ exports.createUser = async (req, res) => {
         });
 
         try {
-            await sendInviteEmail(user, req);
+            await sendInviteEmail(user, req, { temporaryPassword });
             return res.status(201).json({ message: 'User created and invite sent', inviteSent: true });
         } catch (inviteError) {
             console.log(inviteError);
