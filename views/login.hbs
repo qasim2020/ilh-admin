@@ -7,7 +7,13 @@
                     <div class="alert alert-danger" role="alert">{{note}}</div>
                 {{/if}}
                 {{#if success}}
-                    <div class="alert alert-success" role="alert">{{success}}</div>
+                    <div id="loginSuccessMessage" class="d-none">{{success}}</div>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            const message = document.getElementById('loginSuccessMessage')?.textContent.trim();
+                            if (message && window.showAdminToast) showAdminToast(message);
+                        });
+                    </script>
                 {{/if}}
                 <form method="POST" action="/login" autocomplete="off" novalidate>
                     <div class="mb-3">

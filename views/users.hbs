@@ -8,9 +8,12 @@
       </div>
       <div class="col-auto ms-auto d-print-none">
         <div class="btn-list">
-          <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-new-user">
+          <a href="#" class="btn btn-primary d-none d-lg-inline-flex" data-bs-toggle="modal" data-bs-target="#modal-new-user">
             <i class="ti ti-plus icon"></i>
             Create new user
+          </a>
+          <a href="#" class="btn btn-primary btn-icon d-inline-flex d-lg-none" data-bs-toggle="modal" data-bs-target="#modal-new-user" aria-label="Create new user">
+            <i class="ti ti-plus icon"></i>
           </a>
         </div>
       </div>
@@ -78,9 +81,6 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <div class="alert alert-success d-none" id="createUserSuccessCard">
-          User created. Invite email sent.
-        </div>
         <div class="mb-3">
           <label class="form-label">Name</label>
           <input type="text" id="newUserName" class="form-control" placeholder="Full name" required>
@@ -141,9 +141,6 @@
       </div>
       <div class="modal-body">
         <input type="hidden" id="editUserId">
-        <div class="alert alert-success d-none" id="inviteSuccessCard">
-          Invite email sent successfully.
-        </div>
         <div class="mb-3">
           <label class="form-label">Name</label>
           <input type="text" id="editUserName" class="form-control" required>
@@ -206,11 +203,9 @@
     $('#editUserName').val(name);
     $('#editUserEmail').val(button.closest('tr').find('td:nth-child(2)').text().trim());
     $(`input[name="editUserStatus"][value="${isActive ? 'active' : 'in-active'}"]`).prop('checked', true);
-    $('#inviteSuccessCard').addClass('d-none');
   });
 
   $('#modal-new-user').on('show.bs.modal', function () {
-    $('#createUserSuccessCard').addClass('d-none');
     $('#createUserBtn').removeClass('d-none');
   });
 
@@ -233,12 +228,11 @@
       type: 'POST',
       data: { name, email, status },
       success: function (res) {
-        if (res.inviteSent) {
-          $('#createUserSuccessCard').removeClass('d-none').text('User created. Invite email sent.');
+        if (window.adminSuccess) {
+          adminSuccess(res.inviteSent ? 'User created. Invite email sent.' : 'User created. Invite email failed.', { reload: true, modal: '#modal-new-user' });
         } else {
-          $('#createUserSuccessCard').removeClass('d-none').text('User created. Invite email failed.');
+          window.location.reload();
         }
-        $btn.addClass('d-none');
       },
       error: function (err) {
         alert(err.responseJSON?.error || 'Failed to create user');
@@ -268,7 +262,11 @@
       type: 'POST',
       data: { name, status },
       success: function () {
-        window.location.reload();
+        if (window.adminSuccess) {
+          adminSuccess('User updated successfully', { reload: true, modal: '#modal-edit-user' });
+        } else {
+          window.location.reload();
+        }
       },
       error: function (err) {
         alert(err.responseJSON?.error || 'Failed to update user');
@@ -291,7 +289,8 @@
       url: `/users/${id}/invite`,
       type: 'POST',
       success: function () {
-        $('#inviteSuccessCard').removeClass('d-none');
+        if (window.showAdminToast) showAdminToast('Invite sent successfully');
+        if (window.closeAdminModal) closeAdminModal('#modal-edit-user');
       },
       error: function (err) {
         alert(err.responseJSON?.error || 'Failed to send invite');
@@ -318,6 +317,7 @@
         if (row.length) {
           row.remove();
         }
+        if (window.showAdminToast) showAdminToast('User deleted successfully');
       },
       error: function (err) {
         alert(err.responseJSON?.error || 'Failed to delete user');

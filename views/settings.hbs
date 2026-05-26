@@ -8,9 +8,12 @@
       </div>
       <div class="col-auto ms-auto d-print-none">
         <div class="btn-list">
-          <button class="btn btn-primary" id="saveSettingsBtn">
+          <button class="btn btn-primary save-settings-btn d-none d-lg-inline-flex" type="button">
             <i class="ti ti-device-floppy icon"></i>
             Save Settings
+          </button>
+          <button class="btn btn-primary btn-icon save-settings-btn d-inline-flex d-lg-none" type="button" aria-label="Save Settings">
+            <i class="ti ti-device-floppy icon"></i>
           </button>
         </div>
       </div>
@@ -170,6 +173,7 @@
         settingsLogoUrl = res.imageUrl;
         $('#settingsLogoUrl').val(res.imageUrl);
         $('#settingsLogoBox').html('<img src="' + res.imageUrl + '" style="max-height:100%; max-width:100%; object-fit:contain; padding:8px;">');
+        if (window.showAdminToast) showAdminToast('Logo uploaded successfully');
       },
       error: function () {
         $('#settingsLogoBox').html('<span id="settingsLogoPlus" style="font-size: 2rem; color: #6c757d;">+</span>');
@@ -243,7 +247,7 @@
     renderTicketEmailList();
   });
 
-  $('#saveSettingsBtn').on('click', function () {
+  $(document).on('click', '.save-settings-btn', function () {
     const data = {
       brandName: $('#settingsBrandName').val().trim(),
       logoUrl: $('#settingsLogoUrl').val().trim(),
@@ -263,11 +267,13 @@
       ticketEmails: ticketEmails,
     };
 
-    const $btn = $(this);
+    const $btn = $('.save-settings-btn');
     const $addBtn = $('#addTicketEmail');
-    const originalText = $btn.text();
+    $btn.each(function () {
+      $(this).data('originalHtml', $(this).html());
+    });
     const originalAddText = $addBtn.text();
-    $btn.prop('disabled', true).text('Saving...');
+    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
     $addBtn
       .prop('disabled', true)
       .html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
@@ -277,13 +283,19 @@
       type: 'POST',
       data,
       success: function () {
-        window.location.reload();
+        if (window.adminSuccess) {
+          adminSuccess('Settings saved successfully', { reload: true, modal: false });
+        } else {
+          window.location.reload();
+        }
       },
       error: function (err) {
         alert(err.responseJSON?.error || 'Failed to save settings');
       },
       complete: function () {
-        $btn.prop('disabled', false).text(originalText);
+        $btn.each(function () {
+          $(this).prop('disabled', false).html($(this).data('originalHtml'));
+        });
         $addBtn.prop('disabled', false).text(originalAddText);
       }
     });

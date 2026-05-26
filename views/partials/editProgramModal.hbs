@@ -11,12 +11,24 @@
                 <div class="mb-3">
                     <label class="form-label">Program Image</label>
                     <div id="programImageBox{{program._id}}" class="border rounded d-flex align-items-center justify-content-center"
-                        style="height: 150px; cursor: pointer;">
-                        <img src="{{program.imageUrl}}"
-                            style="height:100%; width:100%; object-fit:cover; border-radius:0.25rem;">
+                        style="height: 220px; cursor: pointer; background-image:url('{{program.imageUrl}}'); background-size:cover; background-position:{{program.heroImagePositionX}}% {{program.heroImagePositionY}}%; border-radius:0.25rem;">
                     </div>
+                    <input type="hidden" id="programImageUrl{{program._id}}" value="{{program.imageUrl}}">
                     <input type="file" id="programImageInput{{program._id}}" name="programImage" accept="image/*"
                         style="display: none;">
+                    <div class="row g-2 mt-2">
+                        <div class="col-md-6">
+                            <label class="form-label mb-1" for="programImagePositionX{{program._id}}">Horizontal position</label>
+                            <input type="range" class="form-range program-image-position-input"
+                                id="programImagePositionX{{program._id}}" min="0" max="100" value="{{program.heroImagePositionX}}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label mb-1" for="programImagePositionY{{program._id}}">Vertical position</label>
+                            <input type="range" class="form-range program-image-position-input"
+                                id="programImagePositionY{{program._id}}" min="0" max="100" value="{{program.heroImagePositionY}}">
+                        </div>
+                    </div>
+                    <div class="form-hint">This preview uses the same crop position as the website hero section.</div>
                 </div>
 
                 <div class="mb-3">
@@ -94,6 +106,7 @@
                             </label>
                         </div>
                     </div>
+
                 </div>
             </div>
 
@@ -144,6 +157,14 @@
 
     let previousImageUrl{{program._id}} = "{{program.imageUrl}}";
 
+    function updateProgramImagePreview{{program._id}}() {
+        const x = $("#programImagePositionX{{program._id}}").val() || 50;
+        const y = $("#programImagePositionY{{program._id}}").val() || 50;
+        $("#programImageBox{{program._id}}").css('background-position', `${x}% ${y}%`);
+    }
+
+    $("#programImagePositionX{{program._id}}, #programImagePositionY{{program._id}}").on("input change", updateProgramImagePreview{{program._id}});
+
     $("#programImageInput{{program._id}}").on("change", function () {
         var file = this.files[0];
         if (!file) return;
@@ -175,8 +196,13 @@
                 $("#programImageBox{{program._id}}").html('<span style="font-size:1rem; color:#6c757d;">Uploading...</span>');
             },
             success: function (res) {
-                $("#programImageBox{{program._id}}").html('<img src="' + res.imageUrl + '" style="height:100%; width:100%; object-fit:cover; border-radius:0.25rem;">');
+                $("#programImageUrl{{program._id}}").val(res.imageUrl);
+                $("#programImageBox{{program._id}}")
+                    .empty()
+                    .css('background-image', `url('${res.imageUrl}')`);
+                updateProgramImagePreview{{program._id}}();
                 previousImageUrl{{program._id}} = res.imageUrl;
+                if (window.showAdminToast) showAdminToast('Image uploaded successfully');
             },
             error: function (err) {
                 $("#programImageBox{{program._id}}").html('<span style="font-size:2rem; color:#6c757d;">+</span>');
@@ -189,7 +215,9 @@
         const modal = $(btn).closest('.modal');
         const $btn = $(btn);
 
-        const imageUrl = $("#programImageBox{{program._id}} img").attr("src");
+        const imageUrl = $("#programImageUrl{{program._id}}").val();
+        const heroImagePositionX = $("#programImagePositionX{{program._id}}").val();
+        const heroImagePositionY = $("#programImagePositionY{{program._id}}").val();
         const title = modal.find('input[name="title"]').val().trim();
         const age = modal.find('input[name="ageRange"]').val().trim();
         const duration = modal.find('input[name="duration"]').val().trim();
@@ -197,9 +225,10 @@
         const specialFeatures = featuresEditor{{program._id}} ? featuresEditor{{program._id}}.getData().trim() : '';
         const gender = modal.find('select[name="gender"]').val();
         const status = modal.find("input[name='status']:checked").val();
-
         const data = {
             imageUrl,
+            heroImagePositionX,
+            heroImagePositionY,
             title,
             age,
             duration,
@@ -217,10 +246,12 @@
             type: "POST",
             data,
             success: function () {
-                    alert("Program updated successfully");
-                    // stay on the same page and refresh to reflect changes
+                if (window.adminSuccess) {
+                    adminSuccess('Program updated successfully', { reload: true, modal: '#modal-{{program._id}}' });
+                } else {
                     window.location.reload();
-                },
+                }
+            },
             error: function (err) {
                 console.log(err);
                 alert("Failed to update program");

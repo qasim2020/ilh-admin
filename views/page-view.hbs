@@ -8,13 +8,19 @@
       </div>
       <div class="col-auto ms-auto">
         <div class="btn-list">
-          <a href="{{backUrl}}" class="btn btn-outline-secondary">
+          <a href="{{backUrl}}" class="btn btn-outline-secondary d-none d-lg-inline-flex">
             <i class="ti ti-arrow-left icon icon-2"></i>
             Back
           </a>
-          <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-edit-page">
+          <a href="{{backUrl}}" class="btn btn-outline-secondary btn-icon d-inline-flex d-lg-none" aria-label="Back">
+            <i class="ti ti-arrow-left icon icon-2"></i>
+          </a>
+          <a href="#" class="btn btn-primary d-none d-lg-inline-flex" data-bs-toggle="modal" data-bs-target="#modal-edit-page">
             <i class="ti ti-edit icon icon-2"></i>
             Edit Page
+          </a>
+          <a href="#" class="btn btn-primary btn-icon d-inline-flex d-lg-none" data-bs-toggle="modal" data-bs-target="#modal-edit-page" aria-label="Edit Page">
+            <i class="ti ti-edit icon icon-2"></i>
           </a>
         </div>
       </div>
@@ -85,7 +91,11 @@
       type: 'POST',
       data: { content, type: '{{pageType}}', title: '{{pageTitle}}' },
       success: function () {
-        window.location.reload();
+        if (window.adminSuccess) {
+          adminSuccess('Page saved successfully', { reload: true, modal: false });
+        } else {
+          window.location.reload();
+        }
       },
       error: function (err) {
         alert(err.responseJSON?.error || 'Failed to save page');

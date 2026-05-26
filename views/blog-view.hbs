@@ -8,11 +8,14 @@
       </div>
       <div class="col-auto ms-auto">
         <div class="btn-list">
-          <a href="/blogs" class="btn btn-outline-secondary">
+          <a href="/blogs" class="btn btn-outline-secondary d-none d-lg-inline-flex">
             <i class="ti ti-arrow-left icon icon-2"></i>
             Back
           </a>
-          <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-edit-blog-view"
+          <a href="/blogs" class="btn btn-outline-secondary btn-icon d-inline-flex d-lg-none" aria-label="Back">
+            <i class="ti ti-arrow-left icon icon-2"></i>
+          </a>
+          <a href="#" class="btn btn-primary d-none d-lg-inline-flex" data-bs-toggle="modal" data-bs-target="#modal-edit-blog-view"
             data-id="{{blog._id}}"
             data-title="{{blog.title}}"
             data-slug="{{blog.slug}}"
@@ -23,6 +26,18 @@
             data-published="{{blog.publishedAt}}">
             <i class="ti ti-edit icon icon-2"></i>
             Edit Blog
+          </a>
+          <a href="#" class="btn btn-primary btn-icon d-inline-flex d-lg-none" data-bs-toggle="modal" data-bs-target="#modal-edit-blog-view"
+            data-id="{{blog._id}}"
+            data-title="{{blog.title}}"
+            data-slug="{{blog.slug}}"
+            data-excerpt="{{blog.excerpt}}"
+            data-cover="{{blog.coverImageUrl}}"
+            data-tags="{{#each blog.tags}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}"
+            data-active="{{blog.isActive}}"
+            data-published="{{blog.publishedAt}}"
+            aria-label="Edit Blog">
+            <i class="ti ti-edit icon icon-2"></i>
           </a>
         </div>
       </div>
@@ -247,6 +262,7 @@
         editBlogViewImageUrl = res.imageUrl;
         $('#editBlogViewCover').val(res.imageUrl);
         $('#editBlogViewImageBox').html('<img src="' + res.imageUrl + '" style="height:100%; width:100%; object-fit:cover; border-radius:0.25rem;">');
+        if (window.showAdminToast) showAdminToast('Image uploaded successfully');
       },
       error: function () {
         $('#editBlogViewImageBox').html('<span id="editBlogViewImagePlus" style="font-size: 2rem; color: #6c757d;">+</span>');
@@ -282,7 +298,11 @@
       type: 'POST',
       data: { title, slug, excerpt, content, coverImageUrl, tags, status, publishedAt },
       success: function () {
-        window.location.reload();
+        if (window.adminSuccess) {
+          adminSuccess('Blog updated successfully', { reload: true, modal: '#modal-edit-blog-view' });
+        } else {
+          window.location.reload();
+        }
       },
       error: function (err) {
         alert(err.responseJSON?.error || 'Failed to update blog');

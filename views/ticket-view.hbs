@@ -8,13 +8,19 @@
       </div>
       <div class="col-auto ms-auto">
         <div class="btn-list">
-          <a href="/tickets" class="btn btn-outline-secondary">
+          <a href="/tickets" class="btn btn-outline-secondary d-none d-lg-inline-flex">
             <i class="ti ti-arrow-left icon icon-2"></i>
             Back
           </a>
-          <button class="btn btn-outline-secondary" id="ticket-toggle" data-action="{{#if ticket.isRead}}unread{{else}}read{{/if}}">
+          <a href="/tickets" class="btn btn-outline-secondary btn-icon d-inline-flex d-lg-none" aria-label="Back">
+            <i class="ti ti-arrow-left icon icon-2"></i>
+          </a>
+          <button class="btn btn-outline-secondary ticket-toggle-btn d-none d-lg-inline-flex" type="button" data-action="{{#if ticket.isRead}}unread{{else}}read{{/if}}">
             <i class="ti {{#if ticket.isRead}}ti-mail-off{{else}}ti-mail{{/if}} icon icon-2"></i>
             {{#if ticket.isRead}}Mark unread{{else}}Mark read{{/if}}
+          </button>
+          <button class="btn btn-outline-secondary btn-icon ticket-toggle-btn d-inline-flex d-lg-none" type="button" data-action="{{#if ticket.isRead}}unread{{else}}read{{/if}}" aria-label="{{#if ticket.isRead}}Mark unread{{else}}Mark read{{/if}}">
+            <i class="ti {{#if ticket.isRead}}ti-mail-off{{else}}ti-mail{{/if}} icon icon-2"></i>
           </button>
         </div>
       </div>
@@ -98,7 +104,28 @@
 </div>
 
 <script>
-  $('#ticket-toggle').on('click', function () {
+  function renderTicketToggleButtons(isRead) {
+    const nextAction = isRead ? 'unread' : 'read';
+
+    $('.ticket-toggle-btn').each(function () {
+      const $button = $(this);
+      const iconClass = isRead ? 'ti-mail-off' : 'ti-mail';
+      const label = isRead ? 'Mark unread' : 'Mark read';
+      $button.data('action', nextAction);
+      $button.attr('aria-label', label);
+
+      if ($button.hasClass('btn-icon')) {
+        $button.html(`<i class="ti ${iconClass} icon icon-2"></i>`);
+      } else {
+        $button.html(`
+          <i class="ti ${iconClass} icon icon-2"></i>
+          ${label}
+        `);
+      }
+    });
+  }
+
+  $(document).on('click', '.ticket-toggle-btn', function () {
     const $button = $(this);
     const $badge = $('#ticket-status-badge');
     const action = $button.data('action');
@@ -111,18 +138,13 @@
       type: 'POST',
       success: function () {
         const isRead = action === 'read';
-        const nextAction = isRead ? 'unread' : 'read';
-
-        $button.data('action', nextAction);
-        $button.html(`
-          <i class="ti ${isRead ? 'ti-mail-off' : 'ti-mail'} icon icon-2"></i>
-          ${isRead ? 'Mark unread' : 'Mark read'}
-        `);
+        renderTicketToggleButtons(isRead);
 
         $badge
           .removeClass('bg-green-lt text-green bg-red-lt text-red')
           .addClass(isRead ? 'bg-green-lt text-green' : 'bg-red-lt text-red')
           .text(isRead ? 'Read' : 'Unread');
+        if (window.showAdminToast) showAdminToast('Ticket updated successfully');
       },
       error: function (xhr) {
         alert(xhr.responseJSON?.error || 'Failed to update ticket');

@@ -87,6 +87,7 @@
                             </label>
                         </div>
                     </div>
+
                 </div>
             </div>
 
@@ -166,6 +167,7 @@
             success: function (res) {
                 $("#programImageBox").html('<img src="' + res.imageUrl + '" style="height:100%; width:100%; object-fit:cover; border-radius:0.25rem;">');
                 previousImageUrl = res.imageUrl;
+                if (window.showAdminToast) showAdminToast('Image uploaded successfully');
             },
             error: function (err) {
                 $("#programImageBox").html('<span style="font-size:2rem; color:#6c757d;">+</span>');
@@ -185,7 +187,6 @@
         const specialFeatures = featuresEditor.getData().trim();
         const gender = modal.find('select[name="gender"]').val();
         const status = $("input[name='status']:checked").val();
-
         const data = {
             imageUrl,
             title,
@@ -202,8 +203,11 @@
             type: "POST",
             data,
             success: function (res) {
-                alert("Program created successfully");
-                window.location.href = "/programs";
+                if (window.adminSuccess) {
+                    adminSuccess('Program created successfully', { redirect: '/programs', modal: '#modal-new-program' });
+                } else {
+                    window.location.href = "/programs";
+                }
             },
             error: function (err) {
                 console.log(err);

@@ -153,6 +153,7 @@
       }
 
     }
+
   </style>
 </head>
 
@@ -163,6 +164,63 @@
     integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/gh/RubaXa/Sortable/Sortable.min.js"></script>
   <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+  <div class="toast-container position-fixed top-0 end-0 p-3" id="adminToastContainer" style="z-index: 2000;"></div>
+  <script>
+    window.showAdminToast = function (message, type) {
+      const toastType = type || 'success';
+      const container = document.getElementById('adminToastContainer');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      toast.className = `toast align-items-center text-bg-${toastType} border-0`;
+      toast.setAttribute('role', 'alert');
+      toast.setAttribute('aria-live', 'assertive');
+      toast.setAttribute('aria-atomic', 'true');
+      toast.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body">${String(message || 'Done').replace(/[&<>"']/g, function (char) {
+            return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char];
+          })}</div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      `;
+      container.appendChild(toast);
+
+      if (window.bootstrap && bootstrap.Toast) {
+        const instance = new bootstrap.Toast(toast, { delay: 2200 });
+        toast.addEventListener('hidden.bs.toast', function () { toast.remove(); });
+        instance.show();
+      }
+    };
+
+    window.closeAdminModal = function (target) {
+      const modalEl = target
+        ? document.querySelector(target)
+        : document.querySelector('.modal.show');
+      if (!modalEl) return;
+
+      if (window.bootstrap && bootstrap.Modal) {
+        const modal = bootstrap.Modal.getInstance(modalEl) || bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.hide();
+      } else if (window.jQuery) {
+        $(modalEl).modal('hide');
+      }
+    };
+
+    window.adminSuccess = function (message, options) {
+      const opts = options || {};
+      if (opts.modal !== false) {
+        window.closeAdminModal(opts.modal);
+      }
+      window.showAdminToast(message || 'Saved successfully', 'success');
+
+      if (opts.redirect) {
+        window.setTimeout(function () { window.location.href = opts.redirect; }, opts.delay || 700);
+      } else if (opts.reload) {
+        window.setTimeout(function () { window.location.reload(); }, opts.delay || 700);
+      }
+    };
+  </script>
 
   <div class="page">
     <button
@@ -383,6 +441,23 @@
             </li>
 
             <li class="nav-item">
+              <a class="nav-link {{#if (eq 'team' activeMenu)}} bg-azure-lt {{/if}}" href="/team">
+                <span class="nav-link-icon d-lg-inline-block">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-users-group">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M10 13a3 3 0 1 0 -6 0v1h6v-1z" />
+                    <path d="M7 10a3 3 0 1 0 0 -6a3 3 0 0 0 0 6z" />
+                    <path d="M20 21v-1a4 4 0 0 0 -4 -4h-5" />
+                    <path d="M14 7a3 3 0 1 0 0 -6" />
+                  </svg>
+                </span>
+                <span class="nav-link-title">Team</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
               <a class="nav-link {{#if (eq 'users' activeMenu)}} bg-azure-lt {{/if}}" href="/users">
                 <span class="nav-link-icon d-lg-inline-block">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-treadmill"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 3a1 1 0 1 0 2 0a1 1 0 0 0 -2 0" /><path d="M3 14l4 1l.5 -.5" /><path d="M12 18v-3l-3 -2.923l.75 -5.077" /><path d="M6 10v-2l4 -1l2.5 2.5l2.5 .5" /><path d="M21 22a1 1 0 0 0 -1 -1h-16a1 1 0 0 0 -1 1" /><path d="M18 21l1 -11l2 -1" /></svg>
@@ -509,6 +584,23 @@
                     <span class="ticket-alert-dot"></span>
                     {{/if}}
                   </span>
+                </span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link {{#if (eq 'team' activeMenu)}} bg-azure-lt {{/if}}" href="/team"
+                data-bs-toggle="tooltip" data-bs-title="Team">
+                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-users-group">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M10 13a3 3 0 1 0 -6 0v1h6v-1z" />
+                    <path d="M7 10a3 3 0 1 0 0 -6a3 3 0 0 0 0 6z" />
+                    <path d="M20 21v-1a4 4 0 0 0 -4 -4h-5" />
+                    <path d="M14 7a3 3 0 1 0 0 -6" />
+                  </svg>
                 </span>
               </a>
             </li>

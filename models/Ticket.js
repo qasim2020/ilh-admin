@@ -27,6 +27,48 @@ const TicketSchema = new mongoose.Schema(
             default: '',
             trim: true,
         },
+        programId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Program',
+            default: null,
+        },
+        quantity: {
+            type: Number,
+            default: 1,
+            min: 1,
+        },
+        totalAmount: {
+            type: Number,
+            default: null,
+            min: 0,
+        },
+        currency: {
+            type: String,
+            default: '',
+            trim: true,
+        },
+        paymentStatus: {
+            type: String,
+            default: '',
+            trim: true,
+        },
+        paymentIntentId: {
+            type: String,
+            default: '',
+            trim: true,
+        },
+        checkoutSessionId: {
+            type: String,
+            default: '',
+            trim: true,
+            unique: true,
+            sparse: true,
+        },
+        stripeCustomerEmail: {
+            type: String,
+            default: '',
+            trim: true,
+        },
         country: {
             type: String,
             default: '',

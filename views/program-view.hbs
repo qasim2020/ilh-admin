@@ -8,13 +8,26 @@
       </div>
       <div class="col-auto ms-auto">
         <div class="btn-list">
-          <a href="/programs" class="btn btn-outline-secondary">
+          <a href="/programs" class="btn btn-outline-secondary d-none d-lg-inline-flex">
             <i class="ti ti-arrow-left icon icon-2"></i>
             Back
           </a>
-          <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-{{program._id}}">
+          <a href="/programs" class="btn btn-outline-secondary btn-icon d-inline-flex d-lg-none" aria-label="Back">
+            <i class="ti ti-arrow-left icon icon-2"></i>
+          </a>
+          <a href="#" class="btn btn-primary d-none d-lg-inline-flex" data-bs-toggle="modal" data-bs-target="#ticketing-modal-{{program._id}}">
+            <i class="ti ti-ticket icon icon-2"></i>
+            Ticketing
+          </a>
+          <a href="#" class="btn btn-primary btn-icon d-inline-flex d-lg-none" data-bs-toggle="modal" data-bs-target="#ticketing-modal-{{program._id}}" aria-label="Ticketing">
+            <i class="ti ti-ticket icon icon-2"></i>
+          </a>
+          <a href="#" class="btn btn-primary d-none d-lg-inline-flex" data-bs-toggle="modal" data-bs-target="#modal-{{program._id}}">
             <i class="ti ti-edit icon icon-2"></i>
             Edit Program
+          </a>
+          <a href="#" class="btn btn-primary btn-icon d-inline-flex d-lg-none" data-bs-toggle="modal" data-bs-target="#modal-{{program._id}}" aria-label="Edit Program">
+            <i class="ti ti-edit icon icon-2"></i>
           </a>
         </div>
       </div>
@@ -27,7 +40,7 @@
     <div class="row row-cards">
       <div class="col-lg-8">
         <div class="card mb-3">
-          <div class="card-img-top" style="height:280px; background-image:url('{{program.imageUrl}}'); background-size:cover; background-position:center;"></div>
+          <div class="card-img-top" style="height:280px; background-image:url('{{program.imageUrl}}'); background-size:cover; background-position:{{program.heroImagePositionX}}% {{program.heroImagePositionY}}%;"></div>
           <div class="card-body">
             <h3 class="card-title mb-2">{{program.title}}</h3>
             <div class="text-muted mb-3">{{program.duration}} · Age {{program.ageRange}}</div>
@@ -40,6 +53,29 @@
               {{/if}}
               <span class="badge bg-azure-lt text-azure">Gender · {{capitalizeFirstLetter program.gender}}</span>
             </div>
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-header">
+            <h3 class="card-title">Ticketing</h3>
+          </div>
+          <div class="card-body">
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              {{#if program.ticketingEnabled}}
+                <span class="badge bg-green-lt text-green">Enabled</span>
+              {{else}}
+                <span class="badge bg-secondary-lt text-secondary">Disabled</span>
+              {{/if}}
+              {{#if program.ticketPrice}}
+                <span class="badge bg-azure-lt text-azure">Price · {{program.ticketPrice}} {{#if program.ticketCurrency}}{{program.ticketCurrency}}{{else}}NOK{{/if}}</span>
+              {{/if}}
+            </div>
+
+            <ul class="list-unstyled mb-0">
+              <li class="mb-2"><strong>Seat Capacity:</strong> {{#if program.seatCapacity}}{{program.seatCapacity}}{{else}}Unlimited{{/if}}</li>
+              <li><strong>Seats Sold:</strong> {{#if program.seatsSold}}{{program.seatsSold}}{{else}}0{{/if}}</li>
+            </ul>
           </div>
         </div>
 
@@ -77,19 +113,39 @@
             <div class="row g-2" id="programGalleryGrid">
               {{#if program.gallery.length}}
                 {{#each program.gallery}}
-                  <div class="col-6">
-                    <div class="position-relative">
-                      <a href="{{this.url}}" data-fslightbox="program-gallery" {{#if (eq this.type "video")}}data-type="video"{{/if}}>
+                  <div class="col-6 gallery-item-col" data-gallery-item-id="{{this._id}}" draggable="true">
+                    <div class="position-relative" data-gallery-item-id="{{this._id}}">
+                      {{#if (eq this.status "processing")}}
                         <div class="ratio ratio-4x3 bg-muted rounded overflow-hidden d-flex align-items-center justify-content-center">
-                          {{#if (eq this.type "video")}}
-                            <video src="{{this.url}}" muted preload="metadata" style="width:100%; height:100%; object-fit:cover;"></video>
-                          {{else}}
-                            <img src="{{this.url}}" alt="Gallery media" style="width:100%; height:100%; object-fit:cover;">
-                          {{/if}}
+                          <div class="gallery-upload-state position-absolute d-flex flex-column gap-2 align-items-center justify-content-center">
+                            <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+                            <span class="gallery-state-label">Processing</span>
+                          </div>
                         </div>
-                      </a>
+                      {{else if (eq this.status "failed")}}
+                        <div class="ratio ratio-4x3 bg-muted rounded overflow-hidden d-flex align-items-center justify-content-center">
+                          <div class="gallery-upload-state is-failed position-absolute d-flex flex-column gap-2 align-items-center justify-content-center">
+                            <i class="ti ti-alert-triangle icon" style="font-size: 1.5rem;"></i>
+                            <span class="gallery-state-label">Failed</span>
+                          </div>
+                        </div>
+                      {{else}}
+                        <a href="{{this.url}}" data-fslightbox="program-gallery" {{#if (eq this.type "video")}}data-type="video" data-autoplay{{/if}}>
+                          <div class="ratio ratio-4x3 bg-muted rounded overflow-hidden d-flex align-items-center justify-content-center">
+                            {{#if (eq this.type "video")}}
+                              {{#if this.thumbnailUrl}}
+                                <img src="{{this.thumbnailUrl}}" alt="Video thumbnail" style="width:100%; height:100%; object-fit:cover;">
+                              {{else}}
+                                <video src="{{this.url}}" muted preload="metadata" style="width:100%; height:100%; object-fit:cover;"></video>
+                              {{/if}}
+                            {{else}}
+                              <img src="{{this.url}}" alt="Gallery media" style="width:100%; height:100%; object-fit:cover;">
+                            {{/if}}
+                          </div>
+                        </a>
+                      {{/if}}
                       <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 delete-gallery-item"
-                        data-filename="{{this.filename}}" data-url="{{this.url}}">
+                        data-item-id="{{this._id}}" data-filename="{{this.filename}}" data-url="{{this.url}}">
                         <i class="ti ti-trash icon" style="font-size: 0.85rem; line-height: 1;"></i>
                       </button>
                     </div>
@@ -112,70 +168,542 @@
 
 {{> editProgramModal }}
 
+<div class="modal modal-blur fade" id="ticketing-modal-{{program._id}}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Program Ticketing Settings</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="ticketingEnabledField" {{#if program.ticketingEnabled}}checked{{/if}}>
+          <label class="form-check-label" for="ticketingEnabledField">
+            Enable Buy Ticket for this program
+          </label>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Ticket Price</label>
+          <input type="number" id="ticketPriceField" class="form-control" min="0" step="0.01"
+            value="{{program.ticketPrice}}" placeholder="499.00">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Currency</label>
+          <input type="text" id="ticketCurrencyField" class="form-control"
+            value="{{#if program.ticketCurrency}}{{program.ticketCurrency}}{{else}}NOK{{/if}}" maxlength="8">
+        </div>
+
+        <div class="mb-0">
+          <label class="form-label">Seat Capacity</label>
+          <input type="number" id="seatCapacityField" class="form-control" min="1" step="1"
+            value="{{program.seatCapacity}}" placeholder="Leave blank for unlimited">
+          <div class="form-hint">Current seats sold: {{#if program.seatsSold}}{{program.seatsSold}}{{else}}0{{/if}}</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a href="#" class="btn btn-link link-secondary" data-bs-dismiss="modal">Cancel</a>
+        <button type="button" class="btn btn-azure" id="saveTicketingBtn" onclick="saveProgramTicketing('{{program._id}}')">
+          <i class="ti ti-device-floppy icon"></i>
+          Save Ticketing
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .gallery-upload-state {
+    inset: 0;
+    background: rgba(20, 33, 61, 0.62);
+    color: #fff;
+    transition: background-color 160ms ease, opacity 160ms ease;
+  }
+
+  .gallery-upload-state.is-complete {
+    background: rgba(47, 179, 68, 0.88);
+  }
+
+  .gallery-upload-state.is-failed {
+    background: rgba(214, 57, 57, 0.88);
+  }
+
+  .gallery-state-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+
+  .gallery-upload-name {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.72));
+    color: #fff;
+    font-size: 0.72rem;
+    line-height: 1.1;
+    padding: 1.25rem 0.45rem 0.45rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .gallery-item-col {
+    cursor: grab;
+  }
+
+  .gallery-item-col.is-dragging {
+    opacity: 0.55;
+  }
+
+  .gallery-item-col.drag-over {
+    outline: 2px dashed rgba(47, 179, 68, 0.9);
+    outline-offset: 2px;
+  }
+</style>
+
 <script>
+  const processingGalleryItems = new Set();
+  let galleryPollTimer = null;
+  let draggingGalleryItem = null;
+  let dragStartOrder = '';
+
+  function escapeHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, function (char) {
+      return {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      }[char];
+    });
+  }
+
+  function galleryMediaCard(item) {
+    const isVideo = item.type === 'video';
+    const itemId = item._id || '';
+
+    if (item.status === 'processing') {
+      return galleryProcessingCard(item);
+    }
+
+    if (item.status === 'failed') {
+      return galleryFailedCard(item);
+    }
+
+    return `
+      <div class="col-6 gallery-item-col" data-gallery-item-id="${itemId}" draggable="true">
+        <div class="position-relative" data-gallery-item-id="${itemId}" data-gallery-status="${item.status || 'ready'}">
+          <a href="${item.url}" data-fslightbox="program-gallery" ${isVideo ? 'data-type="video" data-autoplay' : ''}>
+            <div class="ratio ratio-4x3 bg-muted rounded overflow-hidden d-flex align-items-center justify-content-center">
+              ${isVideo && item.thumbnailUrl ? `<img src="${item.thumbnailUrl}" alt="Video thumbnail" style="width:100%; height:100%; object-fit:cover;">` : isVideo ? `<video src="${item.url}" muted preload="metadata" style="width:100%; height:100%; object-fit:cover;"></video>` : `<img src="${item.url}" alt="Gallery media" style="width:100%; height:100%; object-fit:cover;">`}
+            </div>
+          </a>
+          <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 delete-gallery-item"
+            data-item-id="${itemId}" data-filename="${item.filename || ''}" data-url="${item.url || ''}">
+            <i class="ti ti-trash icon" style="font-size: 0.85rem; line-height: 1;"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  function galleryProcessingCard(item) {
+    const itemId = item._id || '';
+
+    return `
+      <div class="col-6 gallery-item-col" data-gallery-item-id="${itemId}" draggable="true">
+        <div class="position-relative" data-gallery-item-id="${itemId}" data-gallery-status="processing">
+          <div class="ratio ratio-4x3 bg-muted rounded overflow-hidden d-flex align-items-center justify-content-center">
+            <div class="gallery-upload-state position-absolute d-flex flex-column gap-2 align-items-center justify-content-center">
+              <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+              <span class="gallery-state-label">Processing</span>
+            </div>
+          </div>
+          <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 delete-gallery-item"
+            data-item-id="${itemId}" data-filename="${item.filename || ''}" data-url="${item.url || ''}">
+            <i class="ti ti-trash icon" style="font-size: 0.85rem; line-height: 1;"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  function galleryFailedCard(item) {
+    const itemId = item._id || '';
+
+    return `
+      <div class="col-6 gallery-item-col" data-gallery-item-id="${itemId}" draggable="true">
+        <div class="position-relative" data-gallery-item-id="${itemId}" data-gallery-status="failed">
+          <div class="ratio ratio-4x3 bg-muted rounded overflow-hidden d-flex align-items-center justify-content-center">
+            <div class="gallery-upload-state is-failed position-absolute d-flex flex-column gap-2 align-items-center justify-content-center">
+              <i class="ti ti-alert-triangle icon" style="font-size: 1.5rem;"></i>
+              <span class="gallery-state-label">Failed</span>
+            </div>
+          </div>
+          <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 delete-gallery-item"
+            data-item-id="${itemId}" data-filename="${item.filename || ''}" data-url="${item.url || ''}">
+            <i class="ti ti-trash icon" style="font-size: 0.85rem; line-height: 1;"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  function galleryUploadPlaceholder(file, uploadId) {
+    const isVideo = file.type && file.type.startsWith('video/');
+    const objectUrl = URL.createObjectURL(file);
+    const media = isVideo
+      ? `<video src="${objectUrl}" muted preload="metadata" style="width:100%; height:100%; object-fit:cover;"></video>`
+      : `<img src="${objectUrl}" alt="" style="width:100%; height:100%; object-fit:cover;">`;
+
+    return `
+      <div class="col-6 gallery-upload-placeholder" data-upload-id="${uploadId}" data-object-url="${objectUrl}">
+        <div class="position-relative">
+          <div class="ratio ratio-4x3 bg-muted rounded overflow-hidden d-flex align-items-center justify-content-center">
+            ${media}
+            <div class="gallery-upload-state position-absolute d-flex flex-column gap-2 align-items-center justify-content-center">
+              <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+              <span class="gallery-state-label upload-progress-label">Uploading 0%</span>
+            </div>
+            <div class="gallery-upload-name position-absolute">${escapeHtml(file.name)}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function updateGalleryUploadProgress(uploadId, percent) {
+    $(`[data-upload-id="${uploadId}"] .upload-progress-label`).text(`Uploading ${percent}%`);
+  }
+
+  function markPlaceholderProcessing($placeholder) {
+    $placeholder.find('.gallery-upload-state').html(`
+      <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+      <span class="gallery-state-label">Processing</span>
+    `);
+  }
+
+  function markPlaceholderFailed($placeholder, message) {
+    const objectUrl = $placeholder.data('object-url');
+    if (objectUrl) {
+      URL.revokeObjectURL(objectUrl);
+    }
+
+    const safeMessage = escapeHtml(message || 'Failed');
+    $placeholder.find('.gallery-upload-state')
+      .addClass('is-failed')
+      .html(`
+        <i class="ti ti-alert-triangle icon" style="font-size: 1.5rem;"></i>
+        <span class="gallery-state-label">${safeMessage}</span>
+      `);
+  }
+
+  function completeGalleryUploadPlaceholder($placeholder, item) {
+    const objectUrl = $placeholder.data('object-url');
+    const $state = $placeholder.find('.gallery-upload-state');
+
+    $state.addClass('is-complete').html('<i class="ti ti-check icon" style="font-size: 1.6rem;"></i>');
+
+    window.setTimeout(function () {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+      $placeholder.replaceWith(galleryMediaCard(item));
+
+      if (window.refreshFsLightbox) {
+        refreshFsLightbox();
+      }
+    }, 450);
+  }
+
+  function replaceGalleryItem(item) {
+    const $existing = $(`[data-gallery-item-id="${item._id}"]`).closest('.col-6');
+
+    if ($existing.length) {
+      $existing.replaceWith(galleryMediaCard(item));
+    } else {
+      $('#programGalleryGrid').append(galleryMediaCard(item));
+    }
+
+    if (item.status === 'processing') {
+      processingGalleryItems.add(String(item._id));
+    } else {
+      processingGalleryItems.delete(String(item._id));
+    }
+  }
+
+  function currentGalleryOrder() {
+    return $('#programGalleryGrid .gallery-item-col[data-gallery-item-id]')
+      .map(function () { return String($(this).data('gallery-item-id')); })
+      .get()
+      .join(',');
+  }
+
+  function persistGalleryOrder() {
+    const itemIds = $('#programGalleryGrid .gallery-item-col[data-gallery-item-id]')
+      .map(function () { return String($(this).data('gallery-item-id')); })
+      .get();
+
+    if (itemIds.length < 2) {
+      return;
+    }
+
+    $.ajax({
+      url: '/programs/{{program._id}}/gallery/reorder',
+      type: 'POST',
+      data: { itemIds },
+    });
+  }
+
+  $(document).on('dragstart', '.gallery-item-col[data-gallery-item-id]', function (event) {
+    draggingGalleryItem = this;
+    dragStartOrder = currentGalleryOrder();
+    $(this).addClass('is-dragging');
+
+    if (event.originalEvent && event.originalEvent.dataTransfer) {
+      event.originalEvent.dataTransfer.effectAllowed = 'move';
+      event.originalEvent.dataTransfer.setData('text/plain', String($(this).data('gallery-item-id')));
+    }
+  });
+
+  $(document).on('dragover', '#programGalleryGrid', function (event) {
+    if (!draggingGalleryItem) return;
+    event.preventDefault();
+
+    const $target = $(event.target).closest('.gallery-item-col[data-gallery-item-id]');
+    if ($target.length === 0 || $target[0] === draggingGalleryItem) {
+      return;
+    }
+
+    $('.gallery-item-col').removeClass('drag-over');
+    $target.addClass('drag-over');
+
+    const rect = $target[0].getBoundingClientRect();
+    const insertBefore = event.originalEvent.clientY < (rect.top + rect.height / 2);
+
+    if (insertBefore) {
+      $target.before(draggingGalleryItem);
+    } else {
+      $target.after(draggingGalleryItem);
+    }
+  });
+
+  $(document).on('dragleave', '.gallery-item-col', function () {
+    $(this).removeClass('drag-over');
+  });
+
+  $(document).on('drop', '#programGalleryGrid', function (event) {
+    if (!draggingGalleryItem) return;
+    event.preventDefault();
+    $('.gallery-item-col').removeClass('drag-over');
+  });
+
+  $(document).on('dragend', '.gallery-item-col[data-gallery-item-id]', function () {
+    $(this).removeClass('is-dragging');
+    $('.gallery-item-col').removeClass('drag-over');
+    draggingGalleryItem = null;
+
+    if (dragStartOrder !== currentGalleryOrder()) {
+      persistGalleryOrder();
+    }
+  });
+
+  function startGalleryPolling() {
+    if (galleryPollTimer || processingGalleryItems.size === 0) {
+      return;
+    }
+
+    galleryPollTimer = window.setInterval(function () {
+      if (processingGalleryItems.size === 0) {
+        window.clearInterval(galleryPollTimer);
+        galleryPollTimer = null;
+        return;
+      }
+
+      $.ajax({
+        url: '/programs/{{program._id}}/gallery/status',
+        type: 'GET',
+        data: { ids: Array.from(processingGalleryItems).join(',') },
+        success: function (res) {
+          (res.media || []).forEach((item) => {
+            if (item.status === 'ready') {
+              const $existing = $(`[data-gallery-item-id="${item._id}"]`);
+              const $state = $existing.find('.gallery-upload-state');
+
+              if ($state.length) {
+                $state.addClass('is-complete').html('<i class="ti ti-check icon" style="font-size: 1.6rem;"></i>');
+                window.setTimeout(function () {
+                  replaceGalleryItem(item);
+                  if (window.refreshFsLightbox) refreshFsLightbox();
+                }, 450);
+              } else {
+                replaceGalleryItem(item);
+              }
+            } else {
+              replaceGalleryItem(item);
+            }
+          });
+
+          if (window.refreshFsLightbox) {
+            refreshFsLightbox();
+          }
+        }
+      });
+    }, 3000);
+  }
+
+  $('[data-gallery-status="processing"]').each(function () {
+    const itemId = $(this).data('gallery-item-id');
+    if (itemId) {
+      processingGalleryItems.add(String(itemId));
+    }
+  });
+  startGalleryPolling();
+
   $('#programGalleryInput').on('change', function () {
     const files = this.files;
     if (!files || files.length === 0) return;
 
-    const formData = new FormData();
-    Array.from(files).forEach((file) => {
-      formData.append('galleryFiles', file);
+    const selectedFiles = Array.from(files);
+    const $input = $(this);
+    const grid = $('#programGalleryGrid');
+    const uploadIds = selectedFiles.map((file, index) => `gallery-upload-${Date.now()}-${index}`);
+
+    if (grid.find('.col-12').length) {
+      grid.empty();
+    }
+
+    selectedFiles.forEach((file, index) => {
+      grid.append(galleryUploadPlaceholder(file, uploadIds[index]));
     });
 
-    const $input = $(this);
     $input.prop('disabled', true);
 
-    $.ajax({
-      url: '/programs/{{program._id}}/gallery',
-      type: 'POST',
-      data: formData,
-      contentType: false,
-      processData: false,
-      success: function (res) {
-        const grid = $('#programGalleryGrid');
-        if (grid.find('.col-12').length) {
-          grid.empty();
-        }
-
-        res.media.forEach((item) => {
-          const isVideo = item.type === 'video';
-          const card = `
-            <div class="col-6">
-              <div class="position-relative">
-                <a href="${item.url}" data-fslightbox="program-gallery" ${isVideo ? 'data-type="video"' : ''}>
-                  <div class="ratio ratio-4x3 bg-muted rounded overflow-hidden d-flex align-items-center justify-content-center">
-                    ${isVideo ? `<video src="${item.url}" muted preload="metadata" style="width:100%; height:100%; object-fit:cover;"></video>` : `<img src="${item.url}" alt="Gallery media" style="width:100%; height:100%; object-fit:cover;">`}
-                  </div>
-                </a>
-                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 delete-gallery-item"
-                  data-filename="${item.filename || ''}" data-url="${item.url}">
-                  <i class="ti ti-trash icon" style="font-size: 0.85rem; line-height: 1;"></i>
-                </button>
-              </div>
-            </div>
-          `;
-          grid.append(card);
-        });
+    uploadFilesWithConcurrency(selectedFiles, uploadIds, 1)
+      .finally(function () {
+        $input.val('');
+        $input.prop('disabled', false);
 
         if (window.refreshFsLightbox) {
           refreshFsLightbox();
         }
-        $input.val('');
-      },
-      error: function (err) {
-        alert(err.responseJSON?.error || 'Failed to upload media');
-      },
-      complete: function () {
-        $input.prop('disabled', false);
-      }
-    });
+      });
   });
+
+  function uploadFilesWithConcurrency(files, uploadIds, limit) {
+    let nextIndex = 0;
+    let completed = 0;
+
+    return new Promise((resolve) => {
+      function runNext() {
+        if (nextIndex >= files.length && completed >= files.length) {
+          resolve();
+          return;
+        }
+
+        while (nextIndex < files.length && (nextIndex - completed) < limit) {
+          const index = nextIndex;
+          nextIndex += 1;
+
+          uploadSingleGalleryFile(files[index], uploadIds[index])
+            .finally(function () {
+              completed += 1;
+              runNext();
+            });
+        }
+      }
+
+      runNext();
+    });
+  }
+
+  function uploadSingleGalleryFile(file, uploadId) {
+    const formData = new FormData();
+    formData.append('galleryFiles', file);
+    const maxStallMs = 120000;
+
+    return new Promise((resolve) => {
+      let lastProgressAt = Date.now();
+      let stalledAbort = false;
+
+      const request = $.ajax({
+        url: '/programs/{{program._id}}/gallery',
+        type: 'POST',
+        data: formData,
+        contentType: false,
+        processData: false,
+        timeout: 15 * 60 * 1000,
+        xhr: function () {
+          const xhr = $.ajaxSettings.xhr();
+          if (xhr.upload) {
+            xhr.upload.addEventListener('progress', function (event) {
+              if (!event.lengthComputable) return;
+              const percent = Math.round((event.loaded / event.total) * 100);
+              updateGalleryUploadProgress(uploadId, Math.max(0, Math.min(100, percent)));
+              lastProgressAt = Date.now();
+            });
+          }
+          return xhr;
+        },
+        success: function (res) {
+          const item = (res.media || [])[0];
+          const $placeholder = $(`[data-upload-id="${uploadId}"]`);
+
+          if (!item) {
+            markPlaceholderFailed($placeholder);
+            return;
+          }
+
+          if ($placeholder.length && item.status === 'processing') {
+            const objectUrl = $placeholder.data('object-url');
+            if (objectUrl) {
+              URL.revokeObjectURL(objectUrl);
+            }
+            $placeholder.replaceWith(galleryProcessingCard(item));
+            processingGalleryItems.add(String(item._id));
+          } else if ($placeholder.length) {
+            completeGalleryUploadPlaceholder($placeholder, item);
+          } else {
+            $('#programGalleryGrid').append(galleryMediaCard(item));
+          }
+
+          startGalleryPolling();
+        },
+        error: function (xhr, textStatus) {
+          const responseError = xhr && xhr.responseJSON && xhr.responseJSON.error;
+          const fallback = textStatus === 'timeout'
+            ? 'Upload timed out'
+            : stalledAbort
+              ? 'Upload stalled (likely proxy/file-size limit)'
+              : xhr && xhr.status === 413
+                ? 'File too large'
+                : 'Upload failed';
+          markPlaceholderFailed($(`[data-upload-id="${uploadId}"]`), responseError || fallback);
+        },
+        complete: function () {
+          window.clearInterval(stallWatch);
+          resolve();
+        }
+      });
+
+      const stallWatch = window.setInterval(function () {
+        if (Date.now() - lastProgressAt < maxStallMs) {
+          return;
+        }
+        stalledAbort = true;
+        request.abort('stalled');
+      }, 5000);
+    });
+  }
 
   $(document).on('click', '.delete-gallery-item', function (event) {
     event.preventDefault();
     event.stopPropagation();
 
     const $button = $(this);
+    const itemId = $button.data('item-id');
     const filename = $button.data('filename');
     const url = $button.data('url');
 
@@ -186,9 +714,12 @@
     $.ajax({
       url: '/programs/{{program._id}}/gallery/delete',
       type: 'POST',
-      data: { filename, url },
+      data: { itemId, filename, url },
       success: function () {
         const $col = $button.closest('.col-6');
+        if (itemId) {
+          processingGalleryItems.delete(String(itemId));
+        }
         $col.remove();
 
         const grid = $('#programGalleryGrid');
@@ -205,10 +736,45 @@
         if (window.refreshFsLightbox) {
           refreshFsLightbox();
         }
+        if (window.showAdminToast) showAdminToast('Media deleted successfully');
       },
       error: function (err) {
         alert(err.responseJSON?.error || 'Failed to delete media');
       }
     });
   });
+
+  function saveProgramTicketing(programId) {
+    const $btn = $('#saveTicketingBtn');
+    const originalHtml = $btn.html();
+
+    const data = {
+      ticketingEnabled: $('#ticketingEnabledField').is(':checked'),
+      ticketPrice: String($('#ticketPriceField').val() || '').trim(),
+      ticketCurrency: String($('#ticketCurrencyField').val() || '').trim(),
+      seatCapacity: String($('#seatCapacityField').val() || '').trim(),
+    };
+
+    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...');
+
+    $.ajax({
+      url: `/programs/${programId}/ticketing`,
+      type: 'POST',
+      data,
+      success: function () {
+        if (window.adminSuccess) {
+          adminSuccess('Ticketing settings updated successfully', { reload: true, modal: '#ticketing-modal-{{program._id}}' });
+        } else {
+          window.location.reload();
+        }
+      },
+      error: function (err) {
+        const message = err.responseJSON?.error || 'Failed to update ticketing settings';
+        alert(message);
+      },
+      complete: function () {
+        $btn.prop('disabled', false).html(originalHtml);
+      }
+    });
+  }
 </script>

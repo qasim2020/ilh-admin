@@ -8,9 +8,12 @@
       </div>
       <div class="col-auto ms-auto d-print-none">
         <div class="btn-list">
-          <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-new-blog">
+          <a href="#" class="btn btn-primary d-none d-lg-inline-flex" data-bs-toggle="modal" data-bs-target="#modal-new-blog">
             <i class="ti ti-plus icon"></i>
             Create new blog
+          </a>
+          <a href="#" class="btn btn-primary btn-icon d-inline-flex d-lg-none" data-bs-toggle="modal" data-bs-target="#modal-new-blog" aria-label="Create new blog">
+            <i class="ti ti-plus icon"></i>
           </a>
         </div>
       </div>
@@ -374,7 +377,11 @@
       type: 'POST',
       data: { title, slug, excerpt, content, coverImageUrl, tags, status, publishedAt },
       success: function () {
-        window.location.reload();
+        if (window.adminSuccess) {
+          adminSuccess('Blog created successfully', { reload: true, modal: '#modal-new-blog' });
+        } else {
+          window.location.reload();
+        }
       },
       error: function (err) {
         alert(err.responseJSON?.error || 'Failed to create blog');
@@ -412,7 +419,11 @@
       type: 'POST',
       data: { title, slug, excerpt, content, coverImageUrl, tags, status, publishedAt },
       success: function () {
-        window.location.reload();
+        if (window.adminSuccess) {
+          adminSuccess('Blog updated successfully', { reload: true, modal: '#modal-edit-blog' });
+        } else {
+          window.location.reload();
+        }
       },
       error: function (err) {
         alert(err.responseJSON?.error || 'Failed to update blog');
@@ -483,6 +494,7 @@
         newBlogImageUrl = res.imageUrl;
         $('#newBlogCover').val(res.imageUrl);
         $('#blogImageBox').html('<img src="' + res.imageUrl + '" style="height:100%; width:100%; object-fit:cover; border-radius:0.25rem;">');
+        if (window.showAdminToast) showAdminToast('Image uploaded successfully');
       },
       error: function () {
         $('#blogImageBox').html('<span id="blogImagePlus" style="font-size: 2rem; color: #6c757d;">+</span>');
@@ -523,6 +535,7 @@
         editBlogImageUrl = res.imageUrl;
         $('#editBlogCover').val(res.imageUrl);
         $('#editBlogImageBox').html('<img src="' + res.imageUrl + '" style="height:100%; width:100%; object-fit:cover; border-radius:0.25rem;">');
+        if (window.showAdminToast) showAdminToast('Image uploaded successfully');
       },
       error: function () {
         $('#editBlogImageBox').html('<span id="editBlogImagePlus" style="font-size: 2rem; color: #6c757d;">+</span>');

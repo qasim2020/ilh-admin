@@ -114,7 +114,11 @@
       url: `/tickets/${ticketId}/${action}`,
       type: 'POST',
       success: function () {
-        window.location.reload();
+        if (window.adminSuccess) {
+          adminSuccess('Ticket updated successfully', { reload: true });
+        } else {
+          window.location.reload();
+        }
       },
       error: function (xhr) {
         alert(xhr.responseJSON?.error || 'Failed to update ticket');
